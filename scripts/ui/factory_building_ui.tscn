@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://4iu0740ortog"]
+
+[ext_resource type="Script" uid="uid://27ohfsvpy7u0" path="res://scripts/ui/hotbar.gd" id="1_msve1"]
+
+[node name="FactoryBuildingUI" type="CanvasGroup" unique_id=979463156]
+
+[node name="Hotbar" type="CanvasLayer" parent="." unique_id=484009725]
+script = ExtResource("1_msve1")
+
+[node name="Control" type="Control" parent="Hotbar" unique_id=1847673082]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MarginContainer" type="MarginContainer" parent="Hotbar/Control" unique_id=1819735751]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PanelContainer" type="PanelContainer" parent="Hotbar/Control/MarginContainer" unique_id=711921637]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Hotbar/Control/MarginContainer/PanelContainer" unique_id=1989486250]
+layout_mode = 2
+
+[node name="Slot1" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=35114431]
+layout_mode = 2
+
+[node name="Slot2" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1517417088]
+layout_mode = 2
+
+[node name="Slot3" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=2073179922]
+layout_mode = 2
+
+[node name="Slot4" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1787991193]
+layout_mode = 2
+
+[node name="Slot5" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1969716868]
+layout_mode = 2
+
+[node name="Slot6" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=293956261]
+layout_mode = 2
+
+[node name="Slot7" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=920100805]
+layout_mode = 2
+
+[node name="Slot8" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=645340781]
+layout_mode = 2
+
+[node name="Slot9" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1945985628]
+layout_mode = 2
+
+[node name="Slot10" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1984801640]
+layout_mode = 2
