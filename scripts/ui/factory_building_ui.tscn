@@ -2,54 +2,92 @@
 
 [ext_resource type="Script" uid="uid://27ohfsvpy7u0" path="res://scripts/ui/hotbar.gd" id="1_msve1"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_msve1"]
+bg_color = Color(0.1254902, 0.14901961, 0.18431373, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_detail = 10
+shadow_color = Color(0, 0, 0, 0.6862745)
+shadow_size = 5
+
 [node name="FactoryBuildingUI" type="CanvasGroup" unique_id=979463156]
 
 [node name="Hotbar" type="CanvasLayer" parent="." unique_id=484009725]
 script = ExtResource("1_msve1")
 
 [node name="Control" type="Control" parent="Hotbar" unique_id=1847673082]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 3
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+anchor_right = 0.99728984
+anchor_bottom = 1.0266659
+offset_right = 5.203491
+offset_bottom = -28.799194
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.99728984, 1.0266659)
+size_flags_vertical = 4
+metadata/_edit_use_anchors_ = true
 
 [node name="MarginContainer" type="MarginContainer" parent="Hotbar/Control" unique_id=1819735751]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_bottom = 40
 
 [node name="PanelContainer" type="PanelContainer" parent="Hotbar/Control/MarginContainer" unique_id=711921637]
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_msve1")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Hotbar/Control/MarginContainer/PanelContainer" unique_id=1989486250]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="Slot1" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=35114431]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot2" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1517417088]
+[node name="Slot2" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1370812258]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot3" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=2073179922]
+[node name="Slot3" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=432710115]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot4" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1787991193]
+[node name="Slot4" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=322532738]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot5" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1969716868]
+[node name="Slot5" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1558711322]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot6" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=293956261]
+[node name="Slot6" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=733641891]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot7" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=920100805]
+[node name="Slot7" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1674798407]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot8" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=645340781]
+[node name="Slot8" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1588657835]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot9" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1945985628]
+[node name="Slot9" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1751197072]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot10" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1984801640]
+[node name="Slot10" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1288237555]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
