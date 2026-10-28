@@ -39,7 +39,7 @@ anchor_bottom = 1.0
 offset_top = -12.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_constants/margin_bottom = 40
+theme_override_constants/margin_bottom = 35
 
 [node name="PanelContainer" type="PanelContainer" parent="Hotbar/Control/MarginContainer" unique_id=711921637]
 layout_mode = 2
@@ -56,38 +56,88 @@ theme_override_constants/separation = 12
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot2" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1370812258]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot1" unique_id=64575013]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot2" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1997703218]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot3" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=432710115]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot2" unique_id=1940286049]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot3" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=768201043]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot4" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=322532738]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot3" unique_id=1371246607]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot4" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=2128074169]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot5" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1558711322]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot4" unique_id=1228103555]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot5" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=922540514]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot6" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=733641891]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot5" unique_id=1939086189]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot6" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=267093450]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot7" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1674798407]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot6" unique_id=1622592717]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot7" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=877641296]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot8" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1588657835]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot7" unique_id=1830261367]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot8" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1324097631]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot9" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1751197072]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot8" unique_id=304283740]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot9" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=824839846]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
-[node name="Slot10" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1288237555]
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot9" unique_id=716826983]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot10" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1190604427]
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot10" unique_id=1217115924]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
