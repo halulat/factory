@@ -5,9 +5,10 @@ const MAX_SLOTS : int = 10
 
 @onready var slot_container : HBoxContainer = $Control/MarginContainer/PanelContainer/HBoxContainer
 
-
 @export var _num_slots : int = 0
 
+@export var selected_style : StyleBoxFlat
+#@export var normal_style : StyleBoxFlat#
 # index i maps to slot i+1
 # 0-9             1-10
 var selected_slot : int = -1
@@ -51,11 +52,14 @@ func _configure_buttons():
 		var label = buttons[i].get_node("Label")
 		label.text = str(i + 1)
 		
+		# configure style
+		
 		# configure icons
 		button.expand_icon = true
 		button.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_CENTER
-
+		
+	
 # check for keyboard input and change slots if hotkeys are pressed
 func _unhandled_key_input(event: InputEvent) -> void:
 	# san check
@@ -112,6 +116,15 @@ func update_hotbar() -> void:
 			button.modulate = Color(1.0, 0.9, 0.5)
 		else:
 			button.modulate = Color.WHITE
+			
+		if i == selected_slot:
+			button.add_theme_stylebox_override("normal", selected_style)
+			button.add_theme_stylebox_override("hover", selected_style)
+			button.add_theme_stylebox_override("pressed", selected_style)
+		else:
+			button.remove_theme_stylebox_override("normal")
+			button.remove_theme_stylebox_override("hover")
+			button.remove_theme_stylebox_override("pressed")
 
 func set_index_to_building(index : int, building : BuildingDefinition) -> void:
 	if (index < 0 or index > items.size()):

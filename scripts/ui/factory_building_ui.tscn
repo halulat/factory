@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://4iu0740ortog"]
 
 [ext_resource type="Script" uid="uid://27ohfsvpy7u0" path="res://scripts/ui/hotbar.gd" id="1_msve1"]
+[ext_resource type="StyleBox" uid="uid://d4jmvk5oralpi" path="res://scripts/ui/button_style_selected.tres" id="2_xxnpg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_msve1"]
 bg_color = Color(0.1254902, 0.14901961, 0.18431373, 1)
@@ -16,6 +17,7 @@ shadow_size = 5
 
 [node name="Hotbar" type="CanvasLayer" parent="." unique_id=484009725]
 script = ExtResource("1_msve1")
+selected_style = ExtResource("2_xxnpg")
 
 [node name="Control" type="Control" parent="Hotbar" unique_id=1847673082]
 custom_minimum_size = Vector2(64, 64)
