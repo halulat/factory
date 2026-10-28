@@ -10,7 +10,7 @@ const MAX_SLOTS : int = 10
 
 # index i maps to slot i+1
 # 0-9             1-10
-var selected_slot : int = 0
+var selected_slot : int = -1
 
 var buttons : Array[Button] = []
 
@@ -26,11 +26,13 @@ func _ready() -> void:
 	
 	_configure_buttons()
 		
-	update_hotbar()
 	
-	var test : BeltDefinition = load("res://assets/placeholders/hotbar_test.tres")
-	var test_2 = test as BuildingDefinition
-	set_index_to_building(1, test_2)
+	# for testing
+	#var test : BeltDefinition = load("res://assets/placeholders/hotbar_test.tres")
+	#var test_2 = test as BuildingDefinition
+	#set_index_to_building(1, test_2)
+	
+	update_hotbar()
 	
 func _configure_buttons():
 	# get all buttons in Horizontal Box container
@@ -73,22 +75,52 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 # slects the slot of given index in array
 func select_index(index : int) -> void:
-	selected_slot = index
+	if index < 0 or index >= items.size():
+		return
+	 
+	if selected_slot == index:
+		selected_slot = -1
+	else:
+		selected_slot = index
+		
 	update_hotbar()
-	print("slot " + str(index + 1) + " is selected")
-	slot_selected.emit(index, items[index])
+	
+	if selected_slot == -1:
+		print("hotbar deselected")
+		slot_selected.emit(-1, null)
+	else:
+		print("slot " + str(index + 1) + " is selected")
+		slot_selected.emit(index, items[index])
 
 # highlight and update hotbar visuals
 func update_hotbar() -> void:
-	pass
+	for i in range(buttons.size()):
+		var button: Button = buttons[i]
+		var building: BuildingDefinition = items[i]
+
+		# Update the icon
+		if building != null:
+			button.icon = building.icon
+		else:
+			button.icon = null
+			
+		# Make the icon fit inside the button
+		button.expand_icon = true
+		
+			# Highlight the selected slot
+		if i == selected_slot:
+			button.modulate = Color(1.0, 0.9, 0.5)
+		else:
+			button.modulate = Color.WHITE
 
 func set_index_to_building(index : int, building : BuildingDefinition) -> void:
 	if (index < 0 or index > items.size()):
 		push_error("index " + str(index) + " out of bounds when setting hotbar slot")
-		
+		return
+	
 	items[index] = building
 	var button = buttons[index]
-	button.icon = building.icon
+	update_hotbar()
 	
 	
 		
