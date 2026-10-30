@@ -1,29 +1,29 @@
 class_name FactoryManager
 extends Node
-
-# Has grid system that stores where things are
+# Has 6 roles
+# 1 Has grid system that stores where things are
 #-> should move to own class
 
-# Has regeristy for ids
+# 2 Has regeristy for ids
 # -> should be own class
 
-# Stores Belt Inventories
-# -> can be stored in runtime instance
-
-# Simulates Belt logic
-# ->  should be in own class
-
-# Simulates machine logic
-# -> should be in own class
-
-# THIS CLASS should schedule the update ticks
-
-# belt is combination of all belt arrays
+# 3 belt is combination of all belt arrays
 # current architecture is SoA (struct of Array) should be AoS for prototype
 # -> create building insatance class (RefCounted) let belt and machine inherit
+# -> can be stored in runtime instance
+
+# 4 Simulates Belt logic
+# ->  should be in own class
+
+# 5 Simulates machine logic
+# -> should be in own class
+
+# 6 THIS CLASS should schedule the update ticks
 
 
-# belt logic
+
+
+# purposed belt logic
 # 1 move items internally
 	# update item array from exit to enter
 	# keep items sorted in array
@@ -55,12 +55,13 @@ extends Node
 # current internal item update doesn't prevent overlapping could have a min dist
 # from front object
 
+# Transfers should be once per item not per belt?
 
 
 
 
 # Get catalog
-@onready var catalog: FactoryCatalog = get_node("../FactoryCatalog")
+var catalog = FactoryCatalog
 
 const EMPTY = -1
 var initialized: bool = false
@@ -142,7 +143,6 @@ var machine_at: PackedInt32Array # Maps a tile index to a machine ID (machine_at
 
 # Initialization
 func _ready() -> void:
-	catalog.initialize() # Fill catalog with all definitions
 	initialize_factory(MAP_SIZE) # Clear and create arrays
 	#run_benchmark(10000, 100, 100, 4) comment out initialize_factory(MAP_SIZE) if you want to run the benchmark test
 

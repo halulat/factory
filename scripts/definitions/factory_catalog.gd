@@ -1,5 +1,5 @@
-extends RefCounted
 class_name FactoryCatalog
+extends Node
 
 # Added in Editor 
 # In the editor make sure to add any resources,recipes,etc that we create
@@ -20,9 +20,13 @@ var belt_ids: Dictionary = {}
 var machine_ids: Dictionary = {}
 var recipe_ids: Dictionary = {}
 
+func _ready() -> void:
+	initialize()
+	
+
 func initialize() -> void:
 	# clear data on reinitialization
-	clear_fields()
+	_clear_fields()
 	
 	for definition in resource_resources:
 		registerResource(definition)
@@ -37,7 +41,7 @@ func initialize() -> void:
 		registerRecipe(definition)
 
 
-func _regeister(
+func _register(
 	definition: DataDefinition,
 	definitions: Array,
 	ids: Dictionary,
@@ -68,16 +72,16 @@ func _regeister(
 	return integer_id
 
 func registerResource(definition: ResourceDefinition) -> int:
-	return _regeister(definition, resources, resource_ids, "resourse")
+	return _register(definition, resources, resource_ids, "resourse")
 
 func registerBelt(definition: BeltDefinition) -> int:
-	return _regeister(definition, belts, belt_ids, "belt")
+	return _register(definition, belts, belt_ids, "belt")
 
 func registerMachine(definition: MachineDefinition) -> int:
-	return _regeister(definition, machines, machine_ids, "machine")
+	return _register(definition, machines, machine_ids, "machine")
 
 func registerRecipe(definition: RecipeDefinition) -> int:
-	return _regeister(definition, recipes, recipe_ids, "recipes")
+	return _register(definition, recipes, recipe_ids, "recipes")
 
 # Turns string id into int so they can be stored in PackedInt32Array
 func getResourceID(id: StringName) -> int:
@@ -92,7 +96,7 @@ func getMachineID(id: StringName) -> int:
 func getRecipeID(id: StringName) -> int:
 	return recipe_ids.get(id, -1)
 
-func clear_fields() -> void:
+func _clear_fields() -> void:
 	resources.clear()
 	belts.clear()
 	machines.clear()
@@ -101,4 +105,26 @@ func clear_fields() -> void:
 	belt_ids.clear()
 	machine_ids.clear()
 	recipe_ids.clear()
-# TODO add int to stringName id look up
+	
+func getResourceName(id: int) -> StringName:
+	if id < 0 or id >= resources.size():
+		return &""
+	return resources[id].id
+
+
+func getBeltName(id: int) -> StringName:
+	if id < 0 or id >= belts.size():
+		return &""
+	return belts[id].id
+
+
+func getMachineName(id: int) -> StringName:
+	if id < 0 or id >= machines.size():
+		return &""
+	return machines[id].id
+
+
+func getRecipeName(id: int) -> StringName:
+	if id < 0 or id >= recipes.size():
+		return &""
+	return recipes[id].id

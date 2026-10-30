@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://c33hp4vbjiwv7"]
+
+[ext_resource type="Script" uid="uid://dlftengbgphhn" path="res://scripts/definitions/factory_catalog.gd" id="1_aj0lo"]
+[ext_resource type="Script" uid="uid://chb4d6bj1ky5g" path="res://scripts/definitions/items/resource_definition.gd" id="2_pv0vf"]
+[ext_resource type="Resource" uid="uid://b0d3mpbqs5i7o" path="res://data_definitions/resources/coal.tres" id="3_t1o8v"]
+[ext_resource type="Resource" uid="uid://c7irvcys3rq1b" path="res://data_definitions/resources/iron.tres" id="4_b78wy"]
+[ext_resource type="Resource" uid="uid://4c1ms0hgv6ob" path="res://data_definitions/resources/steel.tres" id="5_3eiy6"]
+[ext_resource type="Script" uid="uid://cxtffjjs1i6hc" path="res://scripts/definitions/buildings/belt_definition.gd" id="6_gc7m5"]
+[ext_resource type="Resource" uid="uid://b801uavjhwjcv" path="res://data_definitions/belts/basic_belt.tres" id="7_nfhq2"]
+[ext_resource type="Script" uid="uid://bo7yrdfojrcih" path="res://scripts/definitions/buildings/machine_definition.gd" id="8_f3mgm"]
+[ext_resource type="Resource" uid="uid://ds5dkqwwljfp7" path="res://data_definitions/machines/smelter.tres" id="9_q84q5"]
+[ext_resource type="Script" uid="uid://cxyjuhk6qn8x5" path="res://scripts/definitions/recipes/recipe_definition.gd" id="10_tg87a"]
+[ext_resource type="Resource" uid="uid://b0agss8il421m" path="res://data_definitions/recipes/steel_recipe.tres" id="11_2kovm"]
+
+[node name="Catalog" type="Node2D" unique_id=1115272046]
+script = ExtResource("1_aj0lo")
+resource_resources = Array[ExtResource("2_pv0vf")]([ExtResource("3_t1o8v"), ExtResource("4_b78wy"), ExtResource("5_3eiy6")])
+belt_resources = Array[ExtResource("6_gc7m5")]([ExtResource("7_nfhq2")])
+machine_resources = Array[ExtResource("8_f3mgm")]([ExtResource("9_q84q5")])
+recipe_resources = Array[ExtResource("10_tg87a")]([ExtResource("11_2kovm")])

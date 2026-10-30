@@ -1,4 +1,4 @@
 class_name MachineDefinition
 extends BuildingDefinition
 
-@export var recipe: RecipeDefinition
+@export var recipes: Array[RecipeDefinition] = []
