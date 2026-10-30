@@ -4,10 +4,11 @@ signal slot_selected(index: int, building : BuildingDefinition)
 const MAX_SLOTS : int = 10
 
 @onready var slot_container : HBoxContainer = $Control/MarginContainer/PanelContainer/HBoxContainer
-
-@export var _num_slots : int = 0
-
 @export var selected_style : StyleBoxFlat
+
+var _num_slots : int = 0
+
+
 #@export var normal_style : StyleBoxFlat#
 # index i maps to slot i+1
 # 0-9             1-10
