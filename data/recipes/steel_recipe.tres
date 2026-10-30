@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Recipe" format=3 uid="uid://b0agss8il421m"]
+[gd_resource type="Resource" script_class="RecipeDefinition" format=3 uid="uid://b0agss8il421m"]
 
 [ext_resource type="Script" uid="uid://co6cxi5giohqw" path="res://scripts/definitions/items/item_amount_definition.gd" id="1_vpk8h"]
 [ext_resource type="Script" uid="uid://cxyjuhk6qn8x5" path="res://scripts/definitions/recipes/recipe_definition.gd" id="2_4k3vq"]

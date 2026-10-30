@@ -1,0 +1,145 @@
+[gd_scene format=3 uid="uid://vu3i1qfyuwyw"]
+
+[ext_resource type="Script" path="res://scripts/ui/hotbar.gd" id="1_kg34g"]
+[ext_resource type="StyleBox" path="res://scripts/ui/button_style_selected.tres" id="2_idahj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_msve1"]
+bg_color = Color(0.1254902, 0.14901961, 0.18431373, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_detail = 10
+shadow_color = Color(0, 0, 0, 0.6862745)
+shadow_size = 5
+
+[node name="FactoryBuildingUI" type="CanvasGroup" unique_id=979463156]
+
+[node name="Hotbar" type="CanvasLayer" parent="." unique_id=484009725]
+script = ExtResource("1_kg34g")
+selected_style = ExtResource("2_idahj")
+
+[node name="Control" type="Control" parent="Hotbar" unique_id=1847673082]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 3
+anchor_right = 0.99728984
+anchor_bottom = 1.0266659
+offset_right = 5.203491
+offset_bottom = -28.799194
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.99728984, 1.0266659)
+size_flags_vertical = 4
+metadata/_edit_use_anchors_ = true
+
+[node name="MarginContainer" type="MarginContainer" parent="Hotbar/Control" unique_id=1819735751]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/margin_bottom = 35
+
+[node name="PanelContainer" type="PanelContainer" parent="Hotbar/Control/MarginContainer" unique_id=711921637]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_msve1")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Hotbar/Control/MarginContainer/PanelContainer" unique_id=1989486250]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Slot1" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=35114431]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot1" unique_id=64575013]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot2" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1997703218]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot2" unique_id=1940286049]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot3" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=768201043]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot3" unique_id=1371246607]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot4" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=2128074169]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot4" unique_id=1228103555]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot5" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=922540514]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot5" unique_id=1939086189]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot6" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=267093450]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot6" unique_id=1622592717]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot7" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=877641296]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot7" unique_id=1830261367]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot8" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1324097631]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot8" unique_id=304283740]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot9" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=824839846]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot9" unique_id=716826983]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Slot10" type="Button" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer" unique_id=1190604427]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Hotbar/Control/MarginContainer/PanelContainer/HBoxContainer/Slot10" unique_id=1217115924]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 23.0

@@ -1,4 +1,4 @@
 class_name MachineDefinition
 extends BuildingDefinition
 
-# TODO finish definition
+@export var recipe: RecipeDefinition
