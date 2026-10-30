@@ -1,5 +1,5 @@
 class_name BuildingDefinition
-extends Resource
+extends DataDefinition
 
 @export_group("Identity")
 @export var id: StringName

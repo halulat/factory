@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://g1rlk2f0gnxg"]
 
 [ext_resource type="Script" uid="uid://dc24mk52kpm2b" path="res://scenes/tile_placement.gd" id="1_mjf3l"]
-[ext_resource type="Texture2D" uid="uid://ddodf2p4rtls6" path="res://assets/Belts.png" id="2_07dpc"]
-[ext_resource type="Texture2D" uid="uid://cmit6oh6qc3on" path="res://assets/Delete_Anim.png" id="3_07dpc"]
+[ext_resource type="Texture2D" uid="uid://gc8vp61lbacp" path="res://assets/Belts.png" id="2_07dpc"]
+[ext_resource type="Texture2D" uid="uid://ut7iuojls3" path="res://assets/Delete_Anim.png" id="3_07dpc"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_mjf3l"]
 texture = ExtResource("2_07dpc")
