@@ -1,6 +1,7 @@
 class_name MachineInstance
 extends BuildingInstance
 
+# An instance of a machine during the runtime
 var definition: MachineDefinition
 var recipe: RecipeDefinition
 
@@ -13,3 +14,7 @@ func _init(machine_def : MachineDefinition, pos :Vector2i, dir: Vector2i) -> voi
 	
 	definition = machine_def
 	
+# These instance types could be converted to SoA
+# id -> ids[]
+# pos -> pos[]
+# However, SoA would need to update_belt(id) and mangage indexs & ids
