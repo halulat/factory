@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="BeltDefinition" format=3 uid="uid://6fsmg36gjnla"]
+
+[ext_resource type="Texture2D" uid="uid://dth6xv8aw235r" path="res://icon.svg" id="1_h0w4c"]
+[ext_resource type="Script" uid="uid://cxtffjjs1i6hc" path="res://scripts/definitions/buildings/belt_definition.gd" id="1_ogx8e"]
+
+[resource]
+script = ExtResource("1_ogx8e")
+id = &"ui_test"
+display_name = "Test Object"
+description = "This shouldn't be in the final game!!!!!"
+icon = ExtResource("1_h0w4c")
+metadata/_custom_type_script = "uid://cxtffjjs1i6hc"
