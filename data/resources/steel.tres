@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ResourceDefinition" format=3 uid="uid://4c1ms0hgv6ob"]
+
+[ext_resource type="Script" uid="uid://bcmr2jnueip7c" path="res://scripts/definitions/items/resource_definition.gd" id="1_rioku"]
+
+[resource]
+script = ExtResource("1_rioku")
+id = &"steel"
+display_name = "Steel"
+metadata/_custom_type_script = "uid://bcmr2jnueip7c"
