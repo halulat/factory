@@ -2,9 +2,9 @@
 
 [ext_resource type="Script" uid="uid://co6cxi5giohqw" path="res://scripts/definitions/items/item_amount_definition.gd" id="1_vpk8h"]
 [ext_resource type="Script" uid="uid://cxyjuhk6qn8x5" path="res://scripts/definitions/recipes/recipe_definition.gd" id="2_4k3vq"]
-[ext_resource type="Resource" uid="uid://b0d3mpbqs5i7o" path="res://data/resources/coal.tres" id="2_oq1vj"]
-[ext_resource type="Resource" uid="uid://c7irvcys3rq1b" path="res://data/resources/iron.tres" id="3_mpb2s"]
-[ext_resource type="Resource" uid="uid://4c1ms0hgv6ob" path="res://data/resources/steel.tres" id="4_uddw8"]
+[ext_resource type="Resource" uid="uid://b0d3mpbqs5i7o" path="res://data_definitions/resources/coal.tres" id="2_oq1vj"]
+[ext_resource type="Resource" uid="uid://c7irvcys3rq1b" path="res://data_definitions/resources/iron.tres" id="3_mpb2s"]
+[ext_resource type="Resource" uid="uid://4c1ms0hgv6ob" path="res://data_definitions/resources/steel.tres" id="4_uddw8"]
 
 [sub_resource type="Resource" id="Resource_vpk8h"]
 script = ExtResource("1_vpk8h")
