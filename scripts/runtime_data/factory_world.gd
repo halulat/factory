@@ -13,11 +13,13 @@ var size : int
 
 
 
-# Grid: array of runtime ids
+# stores the occupancy of the game world
 # stored in x * y sized array 
 # where pos(x, y) => index x + width * y
 var cells: PackedInt32Array = []
 
+# Building ID -> Tile index
+var building_positions: Dictionary = {}
 
 func _init(w: int = 500, h: int = 500) -> void:
 	assert(w > 0 and h > 0)
@@ -46,7 +48,9 @@ func is_valid_pos(pos: Vector2i) -> bool:
 		and pos.y >= 0 
 		and pos.y < height
 	)
-		
+	
+func is_valid_index(index: int) -> bool:
+	return index >= 0 and index < size	
 # -----------------------
 # queries
 # ------------------------
@@ -57,36 +61,67 @@ func get_cell(pos: Vector2i) -> int:
 		
 	return cells[pos_to_index(pos)]
 
-# Returns a cell at given displacement of origin
-# Use pos + Vector2i.UP/LEFT/DOWN/RIGHT to get neighbours 
-func get_cell_displaced(pos: Vector2i, direction: Vector2i) -> int:
-	return get_cell(pos + direction)
-	
-func is_empty(pos : Vector2i) -> bool:
-	return (is_valid_pos(pos) and get_cell(pos) == EMPTY)
-	
-#------------------------
-# Building Lifetime
-#-------------------------
+func get_cell_by_index(index: int) -> int:
+	if not is_valid_index(index):
+		return EMPTY
 
-# takes an instance_id and places it in the given position and direction
-func place_building(instance_id: int, pos :Vector2i, direction :Vector2i):
+	return cells[index]
+
+
+func is_empty(pos: Vector2i) -> bool:
+	return (
+		is_valid_pos(pos)
+		and cells[pos_to_index(pos)] == EMPTY
+		)
+
+
+func has_building(building_id: int) -> bool:
+	return building_positions.has(building_id)
+
+
+func get_building_position(building_id: int) -> Vector2i:
+	if not has_building(building_id):
+		return Vector2i(-1, -1)
+
+	return index_to_pos(building_positions[building_id])
+# ---------------------------------
+# Building placement
+# ---------------------------------
+
+func place_building(building_id: int, pos: Vector2i) -> bool:
+	if building_id < 0:
+		return false
+
 	if not is_empty(pos):
-		return null
-	cells[pos_to_index(pos)] = instance_id
-	
-func remove_building(instance_id: int) -> bool:
-	if instance_id == EMPTY:
 		return false
-		
-	cells[instance_id] = EMPTY
+
+	if has_building(building_id):
+		return false
+
+	var index := pos_to_index(pos)
+
+	cells[index] = building_id
+	building_positions[building_id] = index
+
 	return true
-	
+
+
+func remove_building(building_id: int) -> bool:
+	if not has_building(building_id):
+		return false
+
+	var index: int = building_positions[building_id]
+
+	cells[index] = EMPTY
+	building_positions.erase(building_id)
+
+	return true
+
+
 func remove_building_at(pos: Vector2i) -> bool:
-	var id := get_cell(pos)
-	if id == EMPTY:
+	var building_id := get_cell(pos)
+
+	if building_id == EMPTY:
 		return false
-		
-	cells[pos_to_index(pos)] = EMPTY
-	return true
-	
+
+	return remove_building(building_id)
