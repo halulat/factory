@@ -3,9 +3,8 @@ extends Node
 
 const EMPTY: int = -1
 
-const MAP_WIDTH: int = 1000
-const MAP_HEIGHT: int = 1000
-const MAP_SIZE: int = MAP_WIDTH * MAP_HEIGHT
+const MAP_SIZE: int = world.width * MAP_HEIGHT
+
 
 const MAX_BELTS: int = 50000
 const MAX_ITEMS_PER_BELT: int = 4
@@ -23,6 +22,8 @@ const DIRECTION_OFFSETS: Array[Vector2i] = [
 
 enum Direction { UP, RIGHT, DOWN, LEFT }
 
+# the occupancy of the world
+var world : FactoryWorld
 
 # ID pools and dense lists. Reverse positions allow O(1) swap-removal.
 var free_belt_ids: PackedInt32Array
@@ -49,8 +50,9 @@ var belt_at: PackedInt32Array
 var _initialized: bool = false
 var simulation_accumulator: float = 0.0
 
-func _ready() -> void:
-	initialize_factory(MAP_SIZE)
+func _init(factory_world: FactoryWorld) -> void:
+	world = factory_world
+	initialize_belts()
 
 func initialize_factory(map_size: int) -> void:
 	simulation_accumulator = 0.0
@@ -119,7 +121,7 @@ func _refresh_connections_near(tile_index: int) -> void:
 		updateBeltConnetions(center_id)
 
 	for direction in range(4):
-		var neighbor_tile: int = getNeighbourTileIndex(tile_index, direction)
+		var neighbor_tile: int = get_neighbor_tile_index(tile_index, direction)
 		if neighbor_tile == EMPTY:
 			continue
 		var neighbor_id: int = belt_at[neighbor_tile]
@@ -191,24 +193,13 @@ func removeBelt(belt_id: int) -> void:
 	_refresh_connections_near(tile_index)
 
 # gets the neighbouring tile in the given direction
-func getNeighbourTileIndex(tile_index: int, direction: int) -> int:
+func get_neighbor_tile_index(tile_index: int, direction: int) -> int:
 	if direction < 0 or direction >= 4:
-		return EMPTY
-	if tile_index < 0 or tile_index >= belt_at.size():
-		return EMPTY
-
-	var x: int = tile_index % MAP_WIDTH
-	var y: int = tile_index / MAP_WIDTH
-	var neighbor: Vector2i = Vector2i(x, y) + DIRECTION_OFFSETS[direction]
-	if neighbor.x < 0 or neighbor.x >= MAP_WIDTH:
-		return EMPTY
-	if neighbor.y < 0 or neighbor.y >= MAP_HEIGHT:
-		return EMPTY
-
-	var result: int = neighbor.y * MAP_WIDTH + neighbor.x
-	if result >= belt_at.size():
-		return EMPTY
-	return result
+		return FactoryWorld.EMPTY
+	return world.get_neighbor_index(
+		tile_index,
+		DIRECTION_OFFSETS[direction],
+		)
 	
 func oppositeDirection(direction: int) -> int:
 	return (direction + 2) % 4 # Returns the opposite direction (UP 0 turns to DOWN 2, LEFT 3 turns to RIGHT 1)
@@ -217,7 +208,7 @@ func updateBeltConnetions(belt_id: int) -> void: # Updates belt_next_indices whe
 	if not _is_active_belt(belt_id):
 		return
 
-	var output_tile: int = getNeighbourTileIndex(
+	var output_tile: int = get_neighbor_tile_index(
 		belt_grid_indices[belt_id], belt_directions[belt_id]
 	)
 	belt_next_indices[belt_id] = EMPTY if output_tile == EMPTY else belt_at[output_tile]
