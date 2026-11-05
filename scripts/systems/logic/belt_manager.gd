@@ -159,7 +159,7 @@ func addBelt(tile_index: int, direction: int, speed: int) -> int:
 	belt_at[tile_index] = belt_id
 	belt_active_position[belt_id] = active_belt_ids.size()
 	active_belt_ids.append(belt_id)
-
+	
 	_refresh_connections_near(tile_index)
 	return belt_id
 
