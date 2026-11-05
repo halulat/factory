@@ -1,10 +1,19 @@
 extends GutTest
 
 var belts: BeltManager
+var world: FactoryWorld
 
 
 func before_each() -> void:
-	belts = add_child_autofree(BeltManager.new())
+	# FactoryWorld extends RefCounted, so it cannot be added to the scene tree.
+	world = FactoryWorld.new(1000, 1000)
+
+	# BeltManager extends Node, so GUT can free it automatically.
+	belts = add_child_autofree(BeltManager.new(world)) as BeltManager
+
+	# Current BeltManager._init() initializes the arrays but does not set
+	# _initialized = true. This call is required for addBelt()/tryInsertItem().
+	belts.initialize_belts(world.size)
 	belts.set_process(false)
 
 
@@ -19,7 +28,9 @@ func _item_index(belt_id: int, slot: int = 0) -> int:
 func test_initialization_sets_empty_grid_and_free_pool() -> void:
 	assert_eq(belts.active_belt_ids.size(), 0)
 	assert_eq(belts.occupied_belt_ids.size(), 0)
-	assert_eq(belts.free_belt_ids.size(), BeltManager.MAX_BELTS)
+	assert_eq(belts.id_pool.available_count(), BeltManager.MAX_BELTS)
+	assert_eq(belts.id_pool.active_count(), 0)
+	assert_eq(belts.belt_at.size(), world.size)
 	assert_eq(belts.belt_at[1001], BeltManager.EMPTY)
 	assert_eq(belts.belt_next_indices[0], BeltManager.EMPTY)
 
@@ -29,14 +40,14 @@ func test_add_belt_registers_grid_and_active_id() -> void:
 	assert_eq(id, 0)
 	assert_eq(belts.belt_at[1001], id)
 	assert_eq(belts.belt_grid_indices[id], 1001)
-	assert_eq(belts.belt_directions[id], BeltManager.Direction.RIGHT)
+	assert_eq(int(belts.belt_directions[id]), BeltManager.Direction.RIGHT)
 	assert_eq(belts.active_belt_ids.size(), 1)
 	assert_eq(belts.belt_active_position[id], 0)
 
 
 func test_add_rejects_out_of_bounds_tiles() -> void:
 	assert_eq(_add(-1), BeltManager.EMPTY)
-	assert_eq(_add(belts.belt_at.size()), BeltManager.EMPTY)
+	assert_eq(_add(world.size), BeltManager.EMPTY)
 	assert_eq(belts.active_belt_ids.size(), 0)
 
 
@@ -52,6 +63,7 @@ func test_add_rejects_invalid_direction_and_speed() -> void:
 	assert_eq(_add(1001, 4), BeltManager.EMPTY)
 	assert_eq(_add(1001, BeltManager.Direction.RIGHT, -1), BeltManager.EMPTY)
 	assert_eq(_add(1001, BeltManager.Direction.RIGHT, 256), BeltManager.EMPTY)
+	assert_eq(belts.active_belt_ids.size(), 0)
 
 
 func test_remove_belt_clears_grid_and_recycles_id() -> void:
@@ -83,11 +95,12 @@ func test_remove_invalid_or_inactive_id_is_safe() -> void:
 
 
 func test_neighbors_do_not_wrap_across_rows() -> void:
-	assert_eq(belts.getNeighbourTileIndex(999, BeltManager.Direction.RIGHT), BeltManager.EMPTY)
-	assert_eq(belts.getNeighbourTileIndex(1000, BeltManager.Direction.LEFT), BeltManager.EMPTY)
-	assert_eq(belts.getNeighbourTileIndex(0, BeltManager.Direction.UP), BeltManager.EMPTY)
-	assert_eq(belts.getNeighbourTileIndex(0, BeltManager.Direction.LEFT), BeltManager.EMPTY)
-	assert_eq(belts.getNeighbourTileIndex(1001, BeltManager.Direction.RIGHT), 1002)
+	assert_eq(belts.get_neighbor_tile_index(999, BeltManager.Direction.RIGHT), BeltManager.EMPTY)
+	assert_eq(belts.get_neighbor_tile_index(1000, BeltManager.Direction.LEFT), BeltManager.EMPTY)
+	assert_eq(belts.get_neighbor_tile_index(0, BeltManager.Direction.UP), BeltManager.EMPTY)
+	assert_eq(belts.get_neighbor_tile_index(0, BeltManager.Direction.LEFT), BeltManager.EMPTY)
+	assert_eq(belts.get_neighbor_tile_index(1001, BeltManager.Direction.RIGHT), 1002)
+	assert_eq(belts.get_neighbor_tile_index(-1, BeltManager.Direction.RIGHT), BeltManager.EMPTY)
 
 
 func test_connects_to_belt_placed_later() -> void:
@@ -119,7 +132,7 @@ func test_removing_destination_disconnects_source() -> void:
 func test_insert_marks_belt_occupied() -> void:
 	var id := _add(1001)
 	assert_true(belts.tryInsertItem(id, 42))
-	assert_eq(belts.belt_item_counts[id], 1)
+	assert_eq(int(belts.belt_item_counts[id]), 1)
 	assert_eq(belts.belt_item_types[_item_index(id)], 42)
 	assert_eq(belts.occupied_belt_ids.size(), 1)
 	assert_eq(belts.belt_occupied_position[id], 0)
@@ -130,14 +143,14 @@ func test_insert_rejects_invalid_id_and_resource() -> void:
 	assert_false(belts.tryInsertItem(-1, 42))
 	assert_false(belts.tryInsertItem(BeltManager.MAX_BELTS, 42))
 	assert_false(belts.tryInsertItem(id, -1))
-	assert_eq(belts.belt_item_counts[id], 0)
+	assert_eq(int(belts.belt_item_counts[id]), 0)
 
 
 func test_insert_rejects_item_too_close_to_entrance() -> void:
 	var id := _add(1001)
 	assert_true(belts.tryInsertItem(id, 42))
 	assert_false(belts.tryInsertItem(id, 43))
-	assert_eq(belts.belt_item_counts[id], 1)
+	assert_eq(int(belts.belt_item_counts[id]), 1)
 
 
 func test_insert_rejects_full_belt() -> void:
@@ -148,7 +161,7 @@ func test_insert_rejects_full_belt() -> void:
 		belts.belt_item_positions[index] = float(slot) * 0.2
 	belts.changeBeltItemCount(id, BeltManager.MAX_ITEMS_PER_BELT)
 	assert_false(belts.tryInsertItem(id, 999))
-	assert_eq(belts.belt_item_counts[id], BeltManager.MAX_ITEMS_PER_BELT)
+	assert_eq(int(belts.belt_item_counts[id]), BeltManager.MAX_ITEMS_PER_BELT)
 
 
 func test_remove_item_only_when_at_exit() -> void:
@@ -158,7 +171,7 @@ func test_remove_item_only_when_at_exit() -> void:
 	belts.belt_item_positions[_item_index(id)] = 1.0
 	assert_false(belts.tryRemoveItem(id, 99))
 	assert_true(belts.tryRemoveItem(id, 42))
-	assert_eq(belts.belt_item_counts[id], 0)
+	assert_eq(int(belts.belt_item_counts[id]), 0)
 	assert_eq(belts.occupied_belt_ids.size(), 0)
 	assert_eq(belts.belt_occupied_position[id], BeltManager.EMPTY)
 
@@ -176,8 +189,8 @@ func test_transfer_moves_item_and_updates_occupied_lists() -> void:
 	assert_true(belts.tryInsertItem(source, 42))
 	belts.belt_item_positions[_item_index(source)] = 1.1
 	belts.updateBelts(0.0)
-	assert_eq(belts.belt_item_counts[source], 0)
-	assert_eq(belts.belt_item_counts[destination], 1)
+	assert_eq(int(belts.belt_item_counts[source]), 0)
+	assert_eq(int(belts.belt_item_counts[destination]), 1)
 	assert_eq(belts.belt_item_types[_item_index(destination)], 42)
 	assert_almost_eq(belts.belt_item_positions[_item_index(destination)], 0.1, 0.00001)
 	assert_eq(belts.occupied_belt_ids.size(), 1)
@@ -185,7 +198,7 @@ func test_transfer_moves_item_and_updates_occupied_lists() -> void:
 
 
 func test_transfer_two_items_updates_count_by_two() -> void:
-	# Regression: earlier implementation only incremented/decremented counts by 1.
+	# Regression: both items should transfer, not only one count update.
 	var source := _add(1001)
 	var destination := _add(1002)
 	for slot in range(2):
@@ -194,8 +207,8 @@ func test_transfer_two_items_updates_count_by_two() -> void:
 		belts.belt_item_positions[index] = 1.0 + float(slot) * 0.25
 	belts.changeBeltItemCount(source, 2)
 	belts.updateBelts(0.0)
-	assert_eq(belts.belt_item_counts[source], 0)
-	assert_eq(belts.belt_item_counts[destination], 2)
+	assert_eq(int(belts.belt_item_counts[source]), 0)
+	assert_eq(int(belts.belt_item_counts[destination]), 2)
 	assert_eq(belts.occupied_belt_ids.size(), 1)
 
 
@@ -206,8 +219,8 @@ func test_blocked_destination_keeps_item_on_source() -> void:
 	assert_true(belts.tryInsertItem(destination, 99))
 	belts.belt_item_positions[_item_index(source)] = 1.0
 	belts.transferBeltItems(source)
-	assert_eq(belts.belt_item_counts[source], 1)
-	assert_eq(belts.belt_item_counts[destination], 1)
+	assert_eq(int(belts.belt_item_counts[source]), 1)
+	assert_eq(int(belts.belt_item_counts[destination]), 1)
 	assert_eq(belts.belt_item_types[_item_index(source)], 42)
 
 
@@ -215,7 +228,7 @@ func test_remove_occupied_belt_clears_items_and_occupancy() -> void:
 	var id := _add(1001)
 	assert_true(belts.tryInsertItem(id, 42))
 	belts.removeBelt(id)
-	assert_eq(belts.belt_item_counts[id], 0)
+	assert_eq(int(belts.belt_item_counts[id]), 0)
 	assert_eq(belts.belt_item_types[_item_index(id)], BeltManager.EMPTY)
 	assert_eq(belts.belt_occupied_position[id], BeltManager.EMPTY)
 	assert_eq(belts.occupied_belt_ids.size(), 0)
@@ -224,10 +237,20 @@ func test_remove_occupied_belt_clears_items_and_occupancy() -> void:
 func test_reinitialize_clears_all_belts_and_items() -> void:
 	var id := _add(1001)
 	assert_true(belts.tryInsertItem(id, 42))
-	belts.initialize_factory(BeltManager.MAP_SIZE)
+	belts.initialize_belts(world.size)
 	assert_eq(belts.active_belt_ids.size(), 0)
 	assert_eq(belts.occupied_belt_ids.size(), 0)
-	assert_eq(belts.free_belt_ids.size(), BeltManager.MAX_BELTS)
+	assert_eq(belts.id_pool.available_count(), BeltManager.MAX_BELTS)
 	assert_eq(belts.belt_at[1001], BeltManager.EMPTY)
 	assert_eq(belts.belt_item_types[_item_index(id)], BeltManager.EMPTY)
-	assert_eq(belts.belt_item_counts[id], 0)
+	assert_eq(int(belts.belt_item_counts[id]), 0)
+	
+func test_id_pool_tracks_lifecycle() -> void:
+	var initial_available := belts.id_pool.available_count()
+	var a := _add(1001)
+	var b := _add(1002)
+	assert_eq(belts.id_pool.available_count(), initial_available - 2)
+	assert_true(belts.id_pool.is_allocated(a))
+	assert_true(belts.id_pool.is_allocated(b))
+	
+	belts.removeBelt(a)

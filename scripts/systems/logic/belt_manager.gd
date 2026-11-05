@@ -3,7 +3,6 @@ extends Node
 
 const EMPTY: int = -1
 
-const MAP_SIZE: int = world.width * MAP_HEIGHT
 
 
 const MAX_BELTS: int = 50000
@@ -24,9 +23,11 @@ enum Direction { UP, RIGHT, DOWN, LEFT }
 
 # the occupancy of the world
 var world : FactoryWorld
+var map_size : int = 1000 * 1000
 
 # ID pools and dense lists. Reverse positions allow O(1) swap-removal.
-var free_belt_ids: PackedInt32Array
+var id_pool: IdPool
+
 var active_belt_ids: PackedInt32Array
 var belt_active_position: PackedInt32Array
 var occupied_belt_ids: PackedInt32Array
@@ -52,16 +53,19 @@ var simulation_accumulator: float = 0.0
 
 func _init(factory_world: FactoryWorld) -> void:
 	world = factory_world
-	initialize_belts()
+	map_size = world.width * world.height
+	initialize_belts(map_size)
 
-func initialize_factory(map_size: int) -> void:
+func initialize_belts(map_size: int) -> void:
 	simulation_accumulator = 0.0
-	initializeBelts(map_size)
 	_initialized = true
-
-func initializeBelts(map_size: int) -> void:
-	# clear id fields
-	free_belt_ids.clear()
+	# reset id pool
+	if id_pool == null:
+		id_pool = IdPool.new(MAX_BELTS)
+	else: 
+		id_pool.reset()
+	
+	# clear id field
 	active_belt_ids.clear()
 	occupied_belt_ids.clear()
 	belt_transfer_ids.clear()
@@ -92,10 +96,6 @@ func initializeBelts(map_size: int) -> void:
 
 	belt_at.resize(map_size)
 	belt_at.fill(EMPTY)
-
-	# Pop from the end to assign IDs in ascending order (0, 1, 2...).
-	for belt_id in range(MAX_BELTS - 1, -1, -1):
-		free_belt_ids.append(belt_id)
 
 
 # check if the belt with given id is active
@@ -137,12 +137,14 @@ func addBelt(tile_index: int, direction: int, speed: int) -> int:
 	# check if belt data given is valid
 	if direction < 0 or direction >= 4 or speed < 0 or speed > 255: 
 		return EMPTY
-	if belt_at[tile_index] != EMPTY or free_belt_ids.is_empty():
+	if belt_at[tile_index] != EMPTY:
 		return EMPTY
 	
 	# get last free id and remove from array
-	var belt_id: int = free_belt_ids[free_belt_ids.size() - 1] 
-	free_belt_ids.remove_at(free_belt_ids.size() - 1) 
+	var belt_id: int = id_pool.acquire()
+	
+	if belt_id == IdPool.INVALID_ID:
+		return EMPTY
 
 	# Initialize data
 	belt_grid_indices[belt_id] = tile_index
@@ -188,7 +190,7 @@ func removeBelt(belt_id: int) -> void:
 		belt_active_position[last_id] = active_position
 	active_belt_ids.resize(last_index)
 	belt_active_position[belt_id] = EMPTY
-	free_belt_ids.append(belt_id)
+	id_pool.release(belt_id)
 	
 	_refresh_connections_near(tile_index)
 
