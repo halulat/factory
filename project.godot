@@ -24,6 +24,10 @@ BuildingManager="*uid://b28d4psynikjm"
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gut/plugin.cfg")
+
 [input]
 
 camera_move_up={

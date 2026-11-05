@@ -4,13 +4,13 @@ extends RefCounted
 # mangaes all the instance ids
 const INVALID_ID: int = -1
 
-var _buildings: Array[BuildingInstance] = []
+var _buildings: Array = []
 var _free_ids: Array[int] = []
 
 var _active_count: int = 0
 
 
-func register(building: BuildingInstance) -> int:
+func register(building) -> int:
 	var id: int
 
 	if not _free_ids.is_empty():
@@ -37,7 +37,7 @@ func unregister(id: int) -> bool:
 	return true
 
 
-func get_building(id: int) -> BuildingInstance:
+func get_building(id: int) :
 	if not contains(id):
 		return null
 
