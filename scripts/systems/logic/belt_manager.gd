@@ -26,7 +26,6 @@ enum Direction {
 
 # the occupancy of the world
 var world: FactoryWorld
-var map_size: int = 1000 * 1000
 
 # ID pool and dense membership sets.
 var id_pool: IdPool
@@ -54,13 +53,12 @@ var simulation_accumulator: float = 0.0
 
 func _init(factory_world: FactoryWorld) -> void:
 	world = factory_world
-	map_size = world.width * world.height
-	initialize_belts(map_size)
+	initialize_belts()
 
 
-func initialize_belts(map_size: int) -> void:
+func initialize_belts() -> void:
+	_initialized = false
 	simulation_accumulator = 0.0
-	_initialized = true
 	# Reset the ID pool.
 	if id_pool == null:
 		id_pool = IdPool.new(MAX_BELTS)
@@ -96,13 +94,24 @@ func initialize_belts(map_size: int) -> void:
 	belt_item_positions.resize(MAX_BELTS * MAX_ITEMS_PER_BELT)
 	belt_item_positions.fill(0.0)
 
-	belt_at.resize(map_size)
+	belt_at.resize(world.size)
 	belt_at.fill(EMPTY)
+	_initialized = true
 
 
 # Check whether a belt ID is currently active.
 func _is_active_belt(belt_id: int) -> bool:
 	return belt_id >= 0 and belt_id < MAX_BELTS and active_belts.contains(belt_id)
+
+
+# Clear all local data for an ID after removing it from occupancy sets.
+# Also safe for a freshly acquired ID before configuring its fields.
+func _reset_belt_data(belt_id: int) -> void:
+	belt_grid_indices[belt_id] = EMPTY
+	belt_directions[belt_id] = 0
+	belt_speeds[belt_id] = 0
+	belt_next_indices[belt_id] = EMPTY
+	_clear_belt_items(belt_id)
 
 
 func _clear_belt_items(belt_id: int) -> void:
@@ -142,7 +151,9 @@ func add_belt(tile_index: int, direction: int, speed: int) -> int:
 	# Validate direction and speed.
 	if direction < 0 or direction >= Direction.size() or speed < 0 or speed > 255:
 		return EMPTY
-	if belt_at[tile_index] != EMPTY:
+	# Belt-local occupancy and global building occupancy must both be clear.
+	# The placement controller registers the global building AFTER this call.
+	if belt_at[tile_index] != EMPTY or not world.is_empty_index(tile_index):
 		return EMPTY
 
 	# Acquire a free belt ID.
@@ -151,12 +162,11 @@ func add_belt(tile_index: int, direction: int, speed: int) -> int:
 	if belt_id == IdPool.INVALID_ID:
 		return EMPTY
 
-	# Initialize data
+	# Initialize reused ID before assigning the new belt fields.
+	_reset_belt_data(belt_id)
 	belt_grid_indices[belt_id] = tile_index
 	belt_directions[belt_id] = direction
 	belt_speeds[belt_id] = speed
-	belt_next_indices[belt_id] = EMPTY
-	_clear_belt_items(belt_id) # clear items from previous belts
 
 	# Register belt.
 	belt_at[tile_index] = belt_id
@@ -174,13 +184,7 @@ func remove_belt(belt_id: int) -> void:
 
 	belt_at[tile_index] = EMPTY
 	occupied_belts.remove(belt_id)
-	_clear_belt_items(belt_id)
-
-	# Clear belt data
-	belt_grid_indices[belt_id] = EMPTY
-	belt_directions[belt_id] = 0
-	belt_speeds[belt_id] = 0
-	belt_next_indices[belt_id] = EMPTY
+	_reset_belt_data(belt_id)
 
 	active_belts.remove(belt_id)
 	id_pool.release(belt_id)
