@@ -7,8 +7,8 @@ var catalog = FactoryCatalog
 const EMPTY = -1
 var initialized: bool = false
 
-# BELT SUBSYSTEM (new common API; legacy belt code below is deleted next checkpoint)
 var world: FactoryWorld = null
+# BELT SUBSYSTEM
 var belt_id_pool: IdPool = null
 var active_belts: DenseIdSet = null
 var belt_store: BeltStore = null
@@ -24,46 +24,8 @@ const MAP_SIZE: int = MAP_WIDTH * MAP_HEIGHT
 # BELTS
 # Belt capacity
 const MAX_BELTS: int = 50000
-const MAX_ITEMS_PER_BELT: int = 4
-const MIN_ITEM_SPACING: float = 0.2
-
-# Belt management
-var free_belt_ids: PackedInt32Array # Contains all belt IDs that aren't currently being used
-var active_belt_ids: PackedInt32Array # Contains every belt currently existing in your factory
-var belt_active_position: PackedInt32Array # This is a reverse lookup array. Shows where a belt ID is located inside active_belt_ids
-var occupied_belt_ids: PackedInt32Array # Contains only belts that currently have at least one item
-var belt_occupied_position: PackedInt32Array # A temporary array used during belt transfers instead of occupied_belt_ids since occupied_belt_ids can change mid transfer
-var belt_transfer_ids: PackedInt32Array # A temporary array used during belt transfers instead of occupied_belt_ids since occupied_belt_ids can change mid transfer
-
-# Belt data
-var belt_tile_indices: PackedInt32Array # Which tile the belt occupies
-var belt_directions: PackedByteArray
-var belt_speeds: PackedByteArray
-var belt_next_indices: PackedInt32Array # Which belt is recieving from this belt
-
-# Inventory
-var belt_item_types: PackedInt32Array # Resource IDs
-var belt_item_positions: PackedFloat32Array # How far along each item is on the belt (0.0 to 1.0)
-var belt_item_counts: PackedByteArray # Number of items on the belt (used to avoid checking all slots if the belt only has one item)
-
-# Tile index. -1 means no belt
-var belt_at: PackedInt32Array # Maps a tile index to a belt ID (belt_at[100] = 5 means tile 100 contains belt 5)
-
-# Belt Directions
-enum Direction {
-	UP,
-	RIGHT,
-	DOWN,
-	LEFT,
-}
-
-#
-const DIRECTION_OFFSETS: Array[Vector2i] = [
-	Vector2i(0, -1), # Up
-	Vector2i(1, 0), # Right
-	Vector2i(0, 1), # Down
-	Vector2i(-1, 0), # Left
-]
+const MAX_ITEMS_PER_BELT: int = BeltStore.MAX_ITEMS_PER_BELT
+const MIN_ITEM_SPACING: float = BeltStore.MIN_ITEM_SPACING
 
 # MACHINES
 # Machine capacity
