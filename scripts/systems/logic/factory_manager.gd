@@ -20,32 +20,29 @@ extends Node
 
 # 6 THIS CLASS should schedule the update ticks
 
-
-
-
 # purposed belt logic
 # 1 move items internally
-	# update item array from exit to enter
-	# keep items sorted in array
-#   
+# update item array from exit to enter
+# keep items sorted in array
+#
 # 2 resolve transfers after moving all items
-	#pending[]
-	#reserved[]
-	#
-	#if can tansfer
-		#add transfer to can tranfer
-	#
-	#for belt in can transfer
-	#if null continue
-	#if target has no space continue
-	#if in reserved continue
-	#
-	#add to reserved
-	#add to pending
+#pending[]
+#reserved[]
+#
+#if can tansfer
+#add transfer to can tranfer
+#
+#for belt in can transfer
+#if null continue
+#if target has no space continue
+#if in reserved continue
+#
+#add to reserved
+#add to pending
 # 3 commit changes
 # 	apply transfers in pending
 
-# ISSUES 
+# ISSUES
 # magic numbers -1 -> EMPTY = -1
 
 # ID registery should be own class
@@ -57,13 +54,10 @@ extends Node
 
 # Transfers should be once per item not per belt?
 
-
-
-
 # Get catalog
 var catalog = FactoryCatalog
 
-const EMPTY = -1
+const EMPTY = BeltS
 var initialized: bool = false
 
 # Grid size not pixels
@@ -87,7 +81,7 @@ var belt_transfer_ids: PackedInt32Array # A temporary array used during belt tra
 
 # Belt data
 var belt_tile_indices: PackedInt32Array # Which tile the belt occupies
-var belt_directions: PackedByteArray 
+var belt_directions: PackedByteArray
 var belt_speeds: PackedByteArray
 var belt_next_indices: PackedInt32Array # Which belt is recieving from this belt
 
@@ -104,15 +98,15 @@ enum Direction {
 	UP,
 	RIGHT,
 	DOWN,
-	LEFT
+	LEFT,
 }
 
 #
 const DIRECTION_OFFSETS: Array[Vector2i] = [
 	Vector2i(0, -1), # Up
-	Vector2i(1, 0),  # Right
-	Vector2i(0, 1),  # Down
-	Vector2i(-1, 0)  # Left
+	Vector2i(1, 0), # Right
+	Vector2i(0, 1), # Down
+	Vector2i(-1, 0), # Left
 ]
 
 # MACHINES
@@ -141,22 +135,25 @@ var machine_item_amounts: PackedInt32Array # Amount of resources (just values un
 # Tile index
 var machine_at: PackedInt32Array # Maps a tile index to a machine ID (machine_at[100] = 5 means tile 100 contains machine 5)
 
+
 # Initialization
 func _ready() -> void:
 	initialize_factory(MAP_SIZE) # Clear and create arrays
 	#run_benchmark(10000, 100, 100, 4) comment out initialize_factory(MAP_SIZE) if you want to run the benchmark test
 
+
 func initialize_factory(map_size: int) -> void:
 	free_belt_ids.clear()
 	active_belt_ids.clear()
-	
+
 	free_machine_ids.clear()
 	active_machine_ids.clear()
-	
+
 	initializeBelts(map_size)
 	initializeMachines(map_size)
-	
+
 	initialized = true
+
 
 func initializeBelts(map_size: int) -> void:
 	belt_tile_indices.resize(MAX_BELTS)
@@ -164,15 +161,11 @@ func initializeBelts(map_size: int) -> void:
 	belt_speeds.resize(MAX_BELTS)
 	belt_next_indices.resize(MAX_BELTS)
 
-	belt_item_types.resize(
-		MAX_BELTS * MAX_ITEMS_PER_BELT
-	)
-	belt_item_positions.resize(
-		MAX_BELTS * MAX_ITEMS_PER_BELT
-	)
-	
+	belt_item_types.resize(MAX_BELTS * MAX_ITEMS_PER_BELT)
+	belt_item_positions.resize(MAX_BELTS * MAX_ITEMS_PER_BELT)
+
 	belt_item_types.fill(EMPTY) # In case we have Resource ID 0
-	
+
 	belt_item_counts.resize(MAX_BELTS)
 	belt_item_counts.fill(0)
 
@@ -180,10 +173,10 @@ func initializeBelts(map_size: int) -> void:
 	belt_at.fill(EMPTY) # belt_at of an empty tile will return EMPTY
 
 	belt_next_indices.fill(EMPTY) # By default every belt will feed nowhere
-	
+
 	belt_active_position.resize(MAX_BELTS)
-	belt_active_position.fill(EMPTY) 
-	
+	belt_active_position.fill(EMPTY)
+
 	occupied_belt_ids.clear()
 	belt_transfer_ids.clear()
 
@@ -194,8 +187,12 @@ func initializeBelts(map_size: int) -> void:
 		free_belt_ids.append(i) # By default all belt IDs are available
 
 
-func beltSlot(belt_id: int, slot: int) -> int: # Turns a Belt ID and a slot in a belt (1 to 4) into a single index
+func beltSlot(
+	belt_id: int,
+	slot: int,
+) -> int: # Turns a Belt ID and a slot in a belt (1 to 4) into a single index
 	return belt_id * MAX_ITEMS_PER_BELT + slot # If each belt can have a max of 4 items, then Belt ID 20 and slot 3 would give index 83
+
 
 func machineSlot(machine_id: int, slot: int) -> int: # Same as beltSlot
 	return machine_id * MAX_MACHINE_SLOTS + slot
@@ -209,25 +206,22 @@ func initializeMachines(map_size: int) -> void: # Same as initializeBelts
 	machine_progress.resize(MAX_MACHINES)
 	machine_status.resize(MAX_MACHINES)
 
-	machine_item_types.resize(
-		MAX_MACHINES * MAX_MACHINE_SLOTS
-	)
-	machine_item_amounts.resize(
-		MAX_MACHINES * MAX_MACHINE_SLOTS
-	)
-	
+	machine_item_types.resize(MAX_MACHINES * MAX_MACHINE_SLOTS)
+	machine_item_amounts.resize(MAX_MACHINES * MAX_MACHINE_SLOTS)
+
 	machine_item_types.fill(EMPTY)
 
 	machine_at.resize(map_size)
 	machine_at.fill(EMPTY)
 
 	machine_recipe_ids.fill(EMPTY)
-	
+
 	machine_active_position.resize(MAX_MACHINES)
 	machine_active_position.fill(EMPTY)
 
 	for i in range(MAX_MACHINES - 1, EMPTY, EMPTY):
 		free_machine_ids.append(i)
+
 
 func addBelt(tile_index: int, direction: int, speed: int) -> int:
 	if tile_index < 0 or tile_index >= belt_at.size(): # Is tile inside map
@@ -253,7 +247,7 @@ func addBelt(tile_index: int, direction: int, speed: int) -> int:
 		var index: int = beltSlot(belt_id, slot)
 		belt_item_types[index] = EMPTY
 		belt_item_positions[index] = 0.0
-	
+
 	belt_item_counts[belt_id] = 0
 
 	# Register belt
@@ -261,15 +255,12 @@ func addBelt(tile_index: int, direction: int, speed: int) -> int:
 
 	belt_active_position[belt_id] = active_belt_ids.size()
 	active_belt_ids.append(belt_id)
-	
+
 	updateBeltConnetions(belt_id) # Update belt_next_indices
 
 	# Update neighbouring belts' connections
 	for dir in range(4):
-		var neighbour_tile: int = getNeighbourTileIndex(
-			tile_index,
-			dir
-		)
+		var neighbour_tile: int = getNeighbourTileIndex(tile_index, dir)
 
 		if neighbour_tile == EMPTY: # Empty
 			continue
@@ -280,8 +271,11 @@ func addBelt(tile_index: int, direction: int, speed: int) -> int:
 			updateBeltConnetions(neighbour_id)
 
 	return belt_id
-	
-func removeBelt(belt_id: int) -> void: # Instead of shifting every belt in the array, swap the last belt with the one being removed and shrink the array (swap and pop method)
+
+
+func removeBelt(
+	belt_id: int
+) -> void: # Instead of shifting every belt in the array, swap the last belt with the one being removed and shrink the array (swap and pop method)
 	if belt_id < 0 or belt_id >= MAX_BELTS:
 		return
 
@@ -300,7 +294,7 @@ func removeBelt(belt_id: int) -> void: # Instead of shifting every belt in the a
 	for other_id in active_belt_ids:
 		if belt_next_indices[other_id] == belt_id:
 			belt_next_indices[other_id] = EMPTY
-			
+
 	removeOccupiedBelt(belt_id) # Remove this belt ID from occupied belts array
 
 	# Clear inventory
@@ -309,7 +303,7 @@ func removeBelt(belt_id: int) -> void: # Instead of shifting every belt in the a
 
 		belt_item_types[index] = EMPTY
 		belt_item_positions[index] = 0.0
-		
+
 	belt_item_counts[belt_id] = 0
 
 	# Clear belt data
@@ -332,9 +326,13 @@ func removeBelt(belt_id: int) -> void: # Instead of shifting every belt in the a
 	# Mark inactive and recycle ID
 	belt_active_position[belt_id] = EMPTY
 	free_belt_ids.append(belt_id)
-	
-func addMachine(tile_index: int, machine_type: int, recipe_id: int = EMPTY) -> int: # Same as addBelt
 
+
+func addMachine(
+	tile_index: int,
+	machine_type: int,
+	recipe_id: int = EMPTY,
+) -> int: # Same as addBelt
 	if tile_index < 0 or tile_index >= machine_at.size():
 		return EMPTY
 
@@ -369,7 +367,8 @@ func addMachine(tile_index: int, machine_type: int, recipe_id: int = EMPTY) -> i
 	active_machine_ids.append(machine_id)
 
 	return machine_id
-	
+
+
 func removeMachine(machine_id: int) -> void: # Same as removeBelt
 	if machine_id < 0 or machine_id >= MAX_MACHINES:
 		return
@@ -414,8 +413,12 @@ func removeMachine(machine_id: int) -> void: # Same as removeBelt
 	# Mark inactive and recycle ID
 	machine_active_position[machine_id] = EMPTY
 	free_machine_ids.append(machine_id)
-	
-func getNeighbourTileIndex(tile_index: int, direction: int) -> int: # Returns the tile index immediately next to a given tile in x direction
+
+
+func getNeighbourTileIndex(
+	tile_index: int,
+	direction: int,
+) -> int: # Returns the tile index immediately next to a given tile in x direction
 	if direction < 0 or direction > 3:
 		return EMPTY
 
@@ -436,10 +439,12 @@ func getNeighbourTileIndex(tile_index: int, direction: int) -> int: # Returns th
 		return EMPTY
 
 	return ny * MAP_WIDTH + nx
-	
+
+
 func oppositeDirection(direction: int) -> int:
 	return (direction + 2) % 4 # Returns the opposite direction (UP 0 turns to DOWN 2, LEFT 3 turns to RIGHT 1)
-	
+
+
 func updateBeltConnetions(belt_id: int) -> void: # Updates belt_next_indices when addBelt is called
 	if belt_active_position[belt_id] == EMPTY:
 		return
@@ -448,10 +453,7 @@ func updateBeltConnetions(belt_id: int) -> void: # Updates belt_next_indices whe
 	var direction: int = belt_directions[belt_id]
 
 	# Find the belt this belt outputs into
-	var output_tile: int = getNeighbourTileIndex(
-		tile_index,
-		direction
-	)
+	var output_tile: int = getNeighbourTileIndex(tile_index, direction)
 
 	if output_tile != EMPTY: # If tile isn't empty
 		var output_belt: int = belt_at[output_tile] # Get belt ID from tile index
@@ -465,10 +467,7 @@ func updateBeltConnetions(belt_id: int) -> void: # Updates belt_next_indices whe
 
 	# Find neighbouring belts that output into this belt
 	for dir in range(4):
-		var neighbour_tile: int = getNeighbourTileIndex(
-			tile_index,
-			dir
-		)
+		var neighbour_tile: int = getNeighbourTileIndex(tile_index, dir)
 
 		if neighbour_tile == EMPTY:
 			continue
@@ -484,6 +483,7 @@ func updateBeltConnetions(belt_id: int) -> void: # Updates belt_next_indices whe
 		if neighbor_direction == oppositeDirection(dir):
 			belt_next_indices[neighbour_id] = belt_id # Update the neighbouring belt's belt_next_indices with this belt's ID
 
+
 # The two functions below (addOccupiedBelt and removeOccupiedBelt) update the occupied belt array which is used for optimization (_process ignores empty belts)
 func addOccupiedBelt(belt_id: int) -> void:
 	if belt_occupied_position[belt_id] != EMPTY:
@@ -492,12 +492,13 @@ func addOccupiedBelt(belt_id: int) -> void:
 	belt_occupied_position[belt_id] = occupied_belt_ids.size()
 	occupied_belt_ids.append(belt_id)
 
+
 func removeOccupiedBelt(belt_id: int) -> void:
 	var position: int = belt_occupied_position[belt_id]
 
 	if position == EMPTY:
 		return
-	
+
 	# Swap and Pop
 	var last_index: int = occupied_belt_ids.size() - 1
 
@@ -509,8 +510,9 @@ func removeOccupiedBelt(belt_id: int) -> void:
 
 	occupied_belt_ids.resize(last_index)
 	belt_occupied_position[belt_id] = EMPTY
-	
-func changeBeltItemCount(belt_id: int, change: int) -> void: 
+
+
+func changeBeltItemCount(belt_id: int, change: int) -> void:
 	# This is called during item transfers between belts
 	# If a belt becomes empty or becomes no longer empty, remove/add it to the occupied belt list
 	var old_count := belt_item_counts[belt_id]
@@ -522,6 +524,7 @@ func changeBeltItemCount(belt_id: int, change: int) -> void:
 		addOccupiedBelt(belt_id)
 	elif old_count > 0 and new_count == 0:
 		removeOccupiedBelt(belt_id)
+
 
 func tryInsertItem(belt_id: int, resource_id: int) -> bool: # Used by machines to add items to belts
 	if belt_id < 0 or belt_id >= MAX_BELTS:
@@ -535,10 +538,7 @@ func tryInsertItem(belt_id: int, resource_id: int) -> bool: # Used by machines t
 
 	var entry_position := 0.0
 
-	var slot := findAvailableBeltSlot(
-		belt_id,
-		entry_position
-	)
+	var slot := findAvailableBeltSlot(belt_id, entry_position)
 
 	if slot == EMPTY:
 		return false
@@ -552,9 +552,11 @@ func tryInsertItem(belt_id: int, resource_id: int) -> bool: # Used by machines t
 
 	return true
 
-func tryRemoveItem( # Used by machines to remove items from belts
+
+func tryRemoveItem(
+	# Used by machines to remove items from belts
 	belt_id: int,
-	resource_id: int
+	resource_id: int,
 ) -> bool:
 	if belt_id < 0 or belt_id >= MAX_BELTS:
 		return false
@@ -573,13 +575,17 @@ func tryRemoveItem( # Used by machines to remove items from belts
 
 		belt_item_types[index] = EMPTY
 		belt_item_positions[index] = 0.0
-		
+
 		changeBeltItemCount(belt_id, EMPTY)
 
 		return true
 	return false
 
-func findAvailableBeltSlot(belt_id: int, position: float) -> int: # Find the first available slot on a belt when adding items (since belts have a max item limit)
+
+func findAvailableBeltSlot(
+	belt_id: int,
+	position: float,
+) -> int: # Find the first available slot on a belt when adding items (since belts have a max item limit)
 	var empty_slot := EMPTY
 
 	for slot in range(MAX_ITEMS_PER_BELT):
@@ -594,13 +600,13 @@ func findAvailableBeltSlot(belt_id: int, position: float) -> int: # Find the fir
 			return EMPTY
 	return empty_slot
 
-
 # PROTOTYPE (If we use this, move constants and _process to top of file)
 
 const SIMULATION_UPDATES_PER_SECOND: float = 10.0 # UPS
 const SIMULATION_INTERVAL: float = 1.0 / SIMULATION_UPDATES_PER_SECOND # Time inbetween updates (if simulating one frame exceeds this, the game will lag)
 
 var simulation_accumulator: float = 0.0
+
 
 func _process(delta: float) -> void:
 	if not initialized:
@@ -612,8 +618,8 @@ func _process(delta: float) -> void:
 		updateBelts(SIMULATION_INTERVAL)
 		updateMachines(SIMULATION_INTERVAL)
 		#update_factory_performance(SIMULATION_INTERVAL) comment out updateBelts(SIMULATION_INTERVAL) and updateMachines(SIMULATION_INTERVAL) if you wish to run the benchmark test
-
 		simulation_accumulator -= SIMULATION_INTERVAL
+
 
 func updateBelts(delta: float) -> void:
 	# Move items only on occupied belts
@@ -626,57 +632,53 @@ func updateBelts(delta: float) -> void:
 	for belt_id in belt_transfer_ids:
 		if belt_occupied_position[belt_id] == EMPTY:
 			continue
-			
+
 		transferBeltItems(belt_id) # Move items between belts
+
 
 func moveBeltItems(belt_id: int, delta: float) -> void:
 	var speed: float = float(belt_speeds[belt_id])
-	
+
 	for slot in range(MAX_ITEMS_PER_BELT):
 		var item_index: int = beltSlot(belt_id, slot)
-		
+
 		if belt_item_types[item_index] == EMPTY:
 			continue
-			
+
 		belt_item_positions[item_index] += speed * delta # belt_item_positions is from 0.0 to 1.0
+
 
 func transferBeltItems(belt_id: int) -> void:
 	var next_belt: int = belt_next_indices[belt_id] # Belt that this belt feeds into
-	
+
 	if next_belt < 0 or next_belt >= MAX_BELTS: # If this belt feeds nowhere
 		return
-		
+
 	if belt_active_position[next_belt] == EMPTY:
 		return
-		
+
 	if next_belt == belt_id: # If this belt feeds into itself somehow :/
 		return
-		
+
 	var transferred := false
-	
+
 	for slot in range(MAX_ITEMS_PER_BELT):
 		var source_index: int = beltSlot(belt_id, slot)
-		
+
 		if belt_item_types[source_index] == EMPTY: # Skip empty items
 			continue
-			
+
 		if belt_item_positions[source_index] < 1.0: # Skip items that aren't at the end of the belt
 			continue
-			
+
 		var new_position: float = belt_item_positions[source_index] - 1.0 # If the position on the previous belt was 1.1, new position would be 0.1 (this is to make it smooth)
-		
-		var destination_slot := findAvailableBeltSlot(
-			next_belt,
-			new_position
-		)
+
+		var destination_slot := findAvailableBeltSlot(next_belt, new_position)
 
 		if destination_slot == EMPTY:
 			continue
 
-		var destination_index: int = beltSlot(
-			next_belt,
-			destination_slot
-		)
+		var destination_index: int = beltSlot(next_belt, destination_slot)
 
 		belt_item_types[destination_index] = belt_item_types[source_index]
 		belt_item_positions[destination_index] = new_position
@@ -690,16 +692,18 @@ func transferBeltItems(belt_id: int) -> void:
 		changeBeltItemCount(belt_id, EMPTY) # Update to check if this belt needs to be removed from the occupied list
 		changeBeltItemCount(next_belt, 1) # Update to check if the next belt needs to be added to the occupied list
 
+
 func updateMachines(delta: float) -> void:
 	for machine_id in active_machine_ids:
 		updateMachine(machine_id, delta)
-		
+
+
 func updateMachine(machine_id: int, delta: float) -> void:
 	var recipe_id: int = machine_recipe_ids[machine_id]
 
 	if recipe_id == EMPTY:
 		return
-		
+
 	# TO DO
 
 
@@ -708,7 +712,7 @@ func run_benchmark(
 	belt_count: int,
 	machine_count: int,
 	occupied_percentage: float = 100.0,
-	items_per_belt: int = 1
+	items_per_belt: int = 1,
 ) -> void:
 	initialize_factory(MAP_SIZE)
 
@@ -741,9 +745,7 @@ func run_benchmark(
 			machines_added += 1
 
 	# Calculate how many belts should contain items
-	var target_occupied := int(
-		belts_added * clampf(occupied_percentage, 0.0, 100.0) / 100.0
-	)
+	var target_occupied := int(belts_added * clampf(occupied_percentage, 0.0, 100.0) / 100.0)
 
 	# Populate belts
 	for belt_id in active_belt_ids:
@@ -769,6 +771,7 @@ func run_benchmark(
 	print("Items: ", items_added)
 	print("Occupied list size: ", occupied_belt_ids.size())
 
+
 func update_factory_performance(delta: float) -> void:
 	var start_time := Time.get_ticks_usec()
 
@@ -782,7 +785,4 @@ func update_factory_performance(delta: float) -> void:
 
 	var machine_time := Time.get_ticks_usec() - start_time
 
-	print(
-		"Belts: ", belt_time / 1000.0, " ms | ",
-		"Machines: ", machine_time / 1000.0, " ms"
-	)
+	print("Belts: ", belt_time / 1000.0, " ms | ", "Machines: ", machine_time / 1000.0, " ms")
