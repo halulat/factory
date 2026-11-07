@@ -18,10 +18,7 @@ var id_pool: IdPool # ids
 var active_belts: DenseIdSet # optimizaton
 var store: BeltStore # data
 var network: BeltNetwork # connections
-
-# Items must not be changed when interating
-# ids for transfer phase of items
-var belt_transfer_ids: PackedInt32Array
+var simulator: BeltSimulator # moves and transfers items
 
 var _initialized: bool = false
 var simulation_accumulator: float = 0.0
@@ -40,7 +37,6 @@ func initialize_belts() -> void:
 		id_pool = IdPool.new(MAX_BELTS)
 	else:
 		id_pool.reset()
-
 	# Reset active and occupied belt membership.
 	if active_belts == null:
 		active_belts = DenseIdSet.new(MAX_BELTS)
@@ -54,7 +50,8 @@ func initialize_belts() -> void:
 		network = BeltNetwork.new(world, store)
 	else:
 		network.reset()
-	belt_transfer_ids.clear()
+	if simulator == null:
+		simulator = BeltSimulator.new(store, network, active_belts)
 
 	_initialized = true
 
@@ -144,60 +141,17 @@ func try_remove_item(belt_id: int, resource_id: int) -> bool:
 	return false
 
 
+# Advance the belt simulation by one fixed step
+func tick(delta: float) -> void:
+	if not _initialized:
+		return
+	simulator.tick(delta)
+
+
 func _process(delta: float) -> void:
 	if not _initialized:
 		return
 	simulation_accumulator += delta
 	while simulation_accumulator >= SIMULATION_INTERVAL:
 		simulation_accumulator -= SIMULATION_INTERVAL
-		_update_belts(SIMULATION_INTERVAL)
-
-
-func _update_belts(delta: float) -> void:
-	# Phase 1: all existing items move exactly once.
-	for belt_id in store.occupied.ids:
-		_move_belt_items(belt_id, delta)
-
-	# Phase 2: copy IDs because transfers mutate the occupied list.
-	belt_transfer_ids.clear()
-	belt_transfer_ids.append_array(store.occupied.ids)
-	for belt_id in belt_transfer_ids:
-		if store.occupied.contains(belt_id):
-			_transfer_belt_items(belt_id)
-
-
-func _move_belt_items(belt_id: int, delta: float) -> void:
-	var movement: float = float(store.speeds[belt_id]) * delta
-	for slot in range(MAX_ITEMS_PER_BELT):
-		var index: int = store.get_item_index(belt_id, slot)
-		if store.item_types[index] != EMPTY:
-			store.item_positions[index] += movement
-
-
-func _transfer_belt_items(belt_id: int) -> void:
-	# Check destination.
-	var next_belt: int = network.next_indices[belt_id]
-	if not _is_active_belt(next_belt) or next_belt == belt_id:
-		return
-
-	var transferred_count: int = 0
-	for slot in range(MAX_ITEMS_PER_BELT):
-		var index: int = store.get_item_index(belt_id, slot)
-		if store.item_positions[index] == EMPTY:
-			continue
-		if store.item_positions[index] < 1.0:
-			continue
-
-		var item_type: int = store.item_types[index]
-		var new_position: float = store.item_positions[index] - BeltStore.EXIT_POSITION
-		var destination_slot: int = store.find_free_slot(next_belt, new_position)
-		if destination_slot == EMPTY:
-			continue
-
-		store.put_item(next_belt, destination_slot, item_type, new_position)
-		store.take_item(belt_id, slot)
-		transferred_count += 1
-
-	if transferred_count > 0:
-		store.change_item_count(belt_id, -transferred_count)
-		store.change_item_count(next_belt, transferred_count)
+		tick(SIMULATION_INTERVAL)
