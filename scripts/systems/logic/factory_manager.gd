@@ -1,64 +1,20 @@
 class_name FactoryManager
 extends Node
-# Has 6 roles
-# 1 Has grid system that stores where things are
-#-> should move to own class
-
-# 2 Has regeristy for ids
-# -> should be own class
-
-# 3 belt is combination of all belt arrays
-# current architecture is SoA (struct of Array) should be AoS for prototype
-# -> create building insatance class (RefCounted) let belt and machine inherit
-# -> can be stored in runtime instance
-
-# 4 Simulates Belt logic
-# ->  should be in own class
-
-# 5 Simulates machine logic
-# -> should be in own class
-
-# 6 THIS CLASS should schedule the update ticks
-
-# purposed belt logic
-# 1 move items internally
-# update item array from exit to enter
-# keep items sorted in array
-#
-# 2 resolve transfers after moving all items
-#pending[]
-#reserved[]
-#
-#if can tansfer
-#add transfer to can tranfer
-#
-#for belt in can transfer
-#if null continue
-#if target has no space continue
-#if in reserved continue
-#
-#add to reserved
-#add to pending
-# 3 commit changes
-# 	apply transfers in pending
-
-# ISSUES
-# magic numbers -1 -> EMPTY = -1
-
-# ID registery should be own class
-
-# Position info should be own class
-
-# current internal item update doesn't prevent overlapping could have a min dist
-# from front object
-
-# Transfers should be once per item not per belt?
 
 # Get catalog
 var catalog = FactoryCatalog
 
-const EMPTY = BeltS
+const EMPTY = -1
 var initialized: bool = false
+
+# BELT SUBSYSTEM (new common API; legacy belt code below is deleted next checkpoint)
+var world: FactoryWorld = null
+var belt_id_pool: IdPool = null
+var active_belts: DenseIdSet = null
+var belt_store: BeltStore = null
+var belt_network: BeltNetwork = null
+var belt_simulator: BeltSimulator = null
+
 
 # Grid size not pixels
 const MAP_WIDTH: int = 1000
@@ -137,20 +93,25 @@ var machine_at: PackedInt32Array # Maps a tile index to a machine ID (machine_at
 
 
 # Initialization
+func _init(factory_world: FactoryWorld = null) -> void:
+	world = factory_world if factory_world != null else FactoryWorld.new(MAP_WIDTH, MAP_HEIGHT)
+
+
 func _ready() -> void:
-	initialize_factory(MAP_SIZE) # Clear and create arrays
-	#run_benchmark(10000, 100, 100, 4) comment out initialize_factory(MAP_SIZE) if you want to run the benchmark test
+	initialize_factory() # Clear and create arrays
+	#run_benchmark(10000, 100, 100, 4) comment out initialize_factory() if you want to run the benchmark test
 
 
-func initialize_factory(map_size: int) -> void:
+func initialize_factory() -> void:
 	free_belt_ids.clear()
 	active_belt_ids.clear()
 
 	free_machine_ids.clear()
 	active_machine_ids.clear()
 
-	initializeBelts(map_size)
-	initializeMachines(map_size)
+	initializeBelts(world.size)
+	initializeMachines(world.size)
+	initialize_belts()
 
 	initialized = true
 
@@ -615,7 +576,7 @@ func _process(delta: float) -> void:
 	simulation_accumulator += delta
 
 	while simulation_accumulator >= SIMULATION_INTERVAL:
-		updateBelts(SIMULATION_INTERVAL)
+		tick(SIMULATION_INTERVAL)
 		updateMachines(SIMULATION_INTERVAL)
 		#update_factory_performance(SIMULATION_INTERVAL) comment out updateBelts(SIMULATION_INTERVAL) and updateMachines(SIMULATION_INTERVAL) if you wish to run the benchmark test
 		simulation_accumulator -= SIMULATION_INTERVAL
@@ -714,7 +675,7 @@ func run_benchmark(
 	occupied_percentage: float = 100.0,
 	items_per_belt: int = 1,
 ) -> void:
-	initialize_factory(MAP_SIZE)
+	initialize_factory()
 
 	var belts_added := 0
 	var machines_added := 0
@@ -786,3 +747,115 @@ func update_factory_performance(delta: float) -> void:
 	var machine_time := Time.get_ticks_usec() - start_time
 
 	print("Belts: ", belt_time / 1000.0, " ms | ", "Machines: ", machine_time / 1000.0, " ms")
+
+
+# BELT COMMON API
+# The manager owns the world, the id pool, the active set and the clock; belt
+# and item storage lives in BeltStore, topology in BeltNetwork and one step in
+# BeltSimulator. These methods are the only door other systems need.
+func initialize_belts() -> void:
+	simulation_accumulator = 0.0
+
+	if belt_id_pool == null:
+		belt_id_pool = IdPool.new(MAX_BELTS)
+	else:
+		belt_id_pool.reset()
+	if active_belts == null:
+		active_belts = DenseIdSet.new(MAX_BELTS)
+	else:
+		active_belts.clear()
+	if belt_store == null:
+		belt_store = BeltStore.new(MAX_BELTS)
+	else:
+		belt_store.reset()
+	if belt_network == null:
+		belt_network = BeltNetwork.new(world, belt_store)
+	else:
+		belt_network.reset()
+	if belt_simulator == null:
+		belt_simulator = BeltSimulator.new(belt_store, belt_network, active_belts)
+
+
+func _is_active_belt(belt_id: int) -> bool:
+	return belt_id >= 0 and belt_id < MAX_BELTS and active_belts.contains(belt_id)
+
+
+func _reset_belt_data(belt_id: int) -> void:
+	belt_store.clear_belt(belt_id)
+	belt_network.clear_belt(belt_id)
+
+
+func add_belt(tile_index: int, direction: int, speed: int) -> int:
+	if not initialized:
+		return EMPTY
+	if tile_index < 0 or tile_index >= world.size:
+		return EMPTY
+	if direction < 0 or direction >= BeltNetwork.Direction.size():
+		return EMPTY
+	if speed < 0 or speed > 255:
+		return EMPTY
+	# The placement controller registers the global building after this call.
+	if belt_network.belt_at[tile_index] != EMPTY or not world.is_empty_index(tile_index):
+		return EMPTY
+
+	var belt_id: int = belt_id_pool.acquire()
+	_reset_belt_data(belt_id)
+	belt_store.grid_indices[belt_id] = tile_index
+	belt_store.directions[belt_id] = direction
+	belt_store.speeds[belt_id] = speed
+	belt_network.register(belt_id, tile_index)
+	active_belts.add(belt_id)
+	belt_network.refresh_near(tile_index)
+	return belt_id
+
+
+func remove_belt(belt_id: int) -> void:
+	if not _is_active_belt(belt_id):
+		return
+
+	var tile_index: int = belt_store.grid_indices[belt_id]
+	belt_network.unregister(belt_id, tile_index)
+	belt_store.clear_belt(belt_id)
+	active_belts.remove(belt_id)
+	belt_id_pool.release(belt_id)
+	belt_network.refresh_near(tile_index)
+
+
+func try_insert_belt_item(belt_id: int, resource_id: int) -> bool:
+	if not _is_active_belt(belt_id) or resource_id < 0:
+		return false
+	var slot: int = belt_store.find_free_slot(belt_id, 0.0)
+	if slot == EMPTY:
+		return false
+	belt_store.put_item(belt_id, slot, resource_id, 0.0)
+	belt_store.change_item_count(belt_id, 1)
+	return true
+
+
+func try_take_belt_item(belt_id: int, resource_id: int) -> bool:
+	if not _is_active_belt(belt_id):
+		return false
+	for slot in range(MAX_ITEMS_PER_BELT):
+		var index: int = belt_store.get_item_index(belt_id, slot)
+		if belt_store.item_types[index] != resource_id:
+			continue
+		if belt_store.item_positions[index] < BeltStore.EXIT_POSITION:
+			continue
+		belt_store.take_item(belt_id, slot)
+		belt_store.change_item_count(belt_id, -1)
+		return true
+	return false
+
+
+func belt_item_count(belt_id: int) -> int:
+	if not _is_active_belt(belt_id):
+		return 0
+	return belt_store.item_count(belt_id)
+
+
+# Advance the simulation by [param delta] seconds. Kept public so tests (and
+# later the machine system) can drive one step without the Node process.
+func tick(delta: float) -> void:
+	if not initialized:
+		return
+	belt_simulator.tick(delta)
