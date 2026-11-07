@@ -10,37 +10,18 @@ const MIN_ITEM_SPACING: float = BeltStore.MIN_ITEM_SPACING
 const SIMULATION_UPDATES_PER_SECOND: float = 10.0
 const SIMULATION_INTERVAL: float = 1.0 / SIMULATION_UPDATES_PER_SECOND
 
-const DIRECTION_OFFSETS: Array[Vector2i] = [
-	Vector2i.UP,
-	Vector2i.RIGHT,
-	Vector2i.DOWN,
-	Vector2i.LEFT,
-]
+# enum of dir
+const Direction = BeltNetwork.Direction
 
-enum Direction {
-	UP,
-	RIGHT,
-	DOWN,
-	LEFT,
-}
-
-# the occupancy of the world
-var world: FactoryWorld
-
-# ID pool and dense membership sets.
-var id_pool: IdPool
-var active_belts: DenseIdSet
-var store: BeltStore
+var world: FactoryWorld # posisions
+var id_pool: IdPool # ids
+var active_belts: DenseIdSet # optimizaton
+var store: BeltStore # data
+var network: BeltNetwork # connections
 
 # Items must not be changed when interating
 # ids for transfer phase of items
 var belt_transfer_ids: PackedInt32Array
-
-# Belt topology TODO extract
-var belt_next_indices: PackedInt32Array
-
-# Tile index -> belt ID; EMPTY means no belt.
-var belt_at: PackedInt32Array
 
 var _initialized: bool = false
 var simulation_accumulator: float = 0.0
@@ -69,14 +50,12 @@ func initialize_belts() -> void:
 		store = BeltStore.new(MAX_BELTS)
 	else:
 		store.reset()
+	if network == null:
+		network = BeltNetwork.new(world, store)
+	else:
+		network.reset()
 	belt_transfer_ids.clear()
 
-	# Clear belt data fields.
-	belt_next_indices.resize(MAX_BELTS)
-	belt_next_indices.fill(EMPTY)
-
-	belt_at.resize(world.size)
-	belt_at.fill(EMPTY)
 	_initialized = true
 
 
@@ -88,22 +67,7 @@ func _is_active_belt(belt_id: int) -> bool:
 # clear data of the given belt id
 func _reset_belt_data(belt_id: int) -> void:
 	store.clear_belt(belt_id)
-	belt_next_indices[belt_id] = EMPTY
-
-
-# Recompute outgoing connections only for a changed tile and its four neighbors.
-func _refresh_connections_near(tile_index: int) -> void:
-	var center_id: int = belt_at[tile_index]
-	if center_id != EMPTY:
-		_update_belt_connections(center_id)
-
-	for direction in range(Direction.size()):
-		var neighbor_tile: int = _get_neighbor_tile_index(tile_index, direction)
-		if neighbor_tile == EMPTY:
-			continue
-		var neighbor_id: int = belt_at[neighbor_tile]
-		if neighbor_id != EMPTY:
-			_update_belt_connections(neighbor_id)
+	network.clear_belt(belt_id)
 
 
 func add_belt(tile_index: int, direction: int, speed: int) -> int:
@@ -118,7 +82,7 @@ func add_belt(tile_index: int, direction: int, speed: int) -> int:
 		return EMPTY
 
 	# The placement controller registers the global building AFTER this call.
-	if belt_at[tile_index] != EMPTY or not world.is_empty_index(tile_index):
+	if network.belt_at[tile_index] != EMPTY or not world.is_empty_index(tile_index):
 		return EMPTY
 
 	var belt_id: int = id_pool.acquire()
@@ -128,10 +92,10 @@ func add_belt(tile_index: int, direction: int, speed: int) -> int:
 	store.directions[belt_id] = direction
 	store.speeds[belt_id] = speed
 
-	belt_at[tile_index] = belt_id
+	network.register(belt_id, tile_index)
 	active_belts.add(belt_id)
 
-	_refresh_connections_near(tile_index)
+	network.refresh_near(tile_index)
 	return belt_id
 
 
@@ -141,31 +105,12 @@ func remove_belt(belt_id: int) -> void:
 
 	var tile_index: int = store.grid_indices[belt_id]
 
-	belt_at[tile_index] = EMPTY
+	network.unregister(belt_id, tile_index)
 
 	store.clear_belt(belt_id)
 	active_belts.remove(belt_id)
 	id_pool.release(belt_id)
-
-	_refresh_connections_near(tile_index)
-
-
-# Return the neighboring tile in the given direction.
-func _get_neighbor_tile_index(tile_index: int, direction: int) -> int:
-	if direction < 0 or direction >= Direction.size():
-		return FactoryWorld.EMPTY
-	return world.get_neighbor_index(tile_index, DIRECTION_OFFSETS[direction])
-
-
-# Updates belt_next_indices when add_belt is called
-func _update_belt_connections(belt_id: int) -> void:
-	if not _is_active_belt(belt_id):
-		return
-
-	var tile_index: int = store.grid_indices[belt_id]
-	var direction: int = store.directions[belt_id]
-	var output_tile: int = _get_neighbor_tile_index(tile_index, direction)
-	belt_next_indices[belt_id] = EMPTY if output_tile == EMPTY else belt_at[output_tile]
+	network.refresh_near(tile_index)
 
 
 func try_insert_item(belt_id: int, resource_id: int) -> bool:
@@ -231,7 +176,7 @@ func _move_belt_items(belt_id: int, delta: float) -> void:
 
 func _transfer_belt_items(belt_id: int) -> void:
 	# Check destination.
-	var next_belt: int = belt_next_indices[belt_id]
+	var next_belt: int = network.next_indices[belt_id]
 	if not _is_active_belt(next_belt) or next_belt == belt_id:
 		return
 

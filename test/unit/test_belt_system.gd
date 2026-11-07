@@ -26,15 +26,15 @@ func test_initialization_sets_empty_grid_and_free_pool() -> void:
 	assert_eq(belts.store.occupied.size(), 0)
 	assert_eq(belts.id_pool.available_count(), BeltManager.MAX_BELTS)
 	assert_eq(belts.id_pool.active_count(), 0)
-	assert_eq(belts.belt_at.size(), world.size)
-	assert_eq(belts.belt_at[1001], BeltManager.EMPTY)
-	assert_eq(belts.belt_next_indices[0], BeltManager.EMPTY)
+	assert_eq(belts.network.belt_at.size(), world.size)
+	assert_eq(belts.network.belt_at[1001], BeltManager.EMPTY)
+	assert_eq(belts.network.next_indices[0], BeltManager.EMPTY)
 
 
 func test_add_belt_registers_grid_and_active_id() -> void:
 	var id := _add(1001)
 	assert_eq(id, 0)
-	assert_eq(belts.belt_at[1001], id)
+	assert_eq(belts.network.belt_at[1001], id)
 	assert_eq(belts.store.grid_indices[id], 1001)
 	assert_eq(int(belts.store.directions[id]), BeltManager.Direction.RIGHT)
 	assert_eq(belts.active_belts.size(), 1)
@@ -50,7 +50,7 @@ func test_add_rejects_out_of_bounds_tiles() -> void:
 func test_add_rejects_duplicate_tile() -> void:
 	var id := _add(1001)
 	assert_eq(_add(1001), BeltManager.EMPTY)
-	assert_eq(belts.belt_at[1001], id)
+	assert_eq(belts.network.belt_at[1001], id)
 	assert_eq(belts.active_belts.size(), 1)
 
 
@@ -65,7 +65,7 @@ func test_add_rejects_invalid_direction_and_speed() -> void:
 func test_remove_belt_clears_grid_and_recycles_id() -> void:
 	var id := _add(1001)
 	belts.remove_belt(id)
-	assert_eq(belts.belt_at[1001], BeltManager.EMPTY)
+	assert_eq(belts.network.belt_at[1001], BeltManager.EMPTY)
 	assert_eq(belts.active_belts.positions[id], DenseIdSet.INVALID)
 	assert_eq(belts.active_belts.size(), 0)
 	assert_eq(_add(1002), id)
@@ -103,22 +103,22 @@ func test_neighbors_do_not_wrap_across_rows() -> void:
 
 func test_connects_to_belt_placed_later() -> void:
 	var source := _add(1001)
-	assert_eq(belts.belt_next_indices[source], BeltManager.EMPTY)
+	assert_eq(belts.network.next_indices[source], BeltManager.EMPTY)
 
 	var destination := _add(1002)
-	assert_eq(belts.belt_next_indices[source], destination)
+	assert_eq(belts.network.next_indices[source], destination)
 
 
 func test_connects_to_belt_placed_earlier() -> void:
 	var destination := _add(1002)
 	var source := _add(1001)
-	assert_eq(belts.belt_next_indices[source], destination)
+	assert_eq(belts.network.next_indices[source], destination)
 
 
 func test_ignores_adjacent_belt_when_not_pointing_at_it() -> void:
 	var source := _add(1001, BeltManager.Direction.UP)
 	_add(1002)
-	assert_eq(belts.belt_next_indices[source], BeltManager.EMPTY)
+	assert_eq(belts.network.next_indices[source], BeltManager.EMPTY)
 
 
 func test_removing_destination_disconnects_source() -> void:
@@ -126,7 +126,7 @@ func test_removing_destination_disconnects_source() -> void:
 	var destination := _add(1002)
 
 	belts.remove_belt(destination)
-	assert_eq(belts.belt_next_indices[source], BeltManager.EMPTY)
+	assert_eq(belts.network.next_indices[source], BeltManager.EMPTY)
 
 
 func test_insert_marks_belt_occupied() -> void:
@@ -264,7 +264,7 @@ func test_reinitialize_clears_all_belts_and_items() -> void:
 	assert_eq(belts.active_belts.size(), 0)
 	assert_eq(belts.store.occupied.size(), 0)
 	assert_eq(belts.id_pool.available_count(), BeltManager.MAX_BELTS)
-	assert_eq(belts.belt_at[1001], BeltManager.EMPTY)
+	assert_eq(belts.network.belt_at[1001], BeltManager.EMPTY)
 	assert_eq(belts.store.item_types[_item_index(id)], BeltManager.EMPTY)
 	assert_eq(int(belts.store.item_counts[id]), 0)
 
