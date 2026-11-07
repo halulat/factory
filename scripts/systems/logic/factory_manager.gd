@@ -3,40 +3,44 @@ extends Node
 
 const EMPTY = -1
 
-# Grid size not pixels
+# Grid size
 const MAP_WIDTH: int = 1000
 const MAP_HEIGHT: int = 1000
 const MAP_SIZE: int = MAP_WIDTH * MAP_HEIGHT
 
-const MAX_BELTS: int = 50000
-const MAX_ITEMS_PER_BELT: int = BeltStore.MAX_ITEMS_PER_BELT
-const MIN_ITEM_SPACING: float = BeltStore.MIN_ITEM_SPACING
-
 const Direction = BeltNetwork.Direction
+
+# Simulation timer
+const SIMULATION_INTERVAL: float = 1.0 / SIMULATION_UPDATES_PER_SECOND # Time inbetween updates (if simulating one frame exceeds this, the game will lag)
+const SIMULATION_UPDATES_PER_SECOND: float = 10.0
+var simulation_accumulator: float = 0.0
 
 # MACHINES
 # Machine capacity
 const MAX_MACHINES: int = 50000
 const MAX_MACHINE_SLOTS: int = MachineStore.MAX_MACHINE_SLOTS
 
-const SIMULATION_UPDATES_PER_SECOND: float = 10.0 # UPS
-const SIMULATION_INTERVAL: float = 1.0 / SIMULATION_UPDATES_PER_SECOND # Time inbetween updates (if simulating one frame exceeds this, the game will lag)
-
-# Get catalog
+# Common
 var catalog = FactoryCatalog
 var initialized: bool = false
-
 var world: FactoryWorld = null
+
 # BELT SUBSYSTEM
+const MAX_BELTS: int = 50000
+const MAX_ITEMS_PER_BELT: int = BeltStore.MAX_ITEMS_PER_BELT
+const MIN_ITEM_SPACING: float = BeltStore.MIN_ITEM_SPACING
+
 var belt_id_pool: IdPool = null
 var active_belts: DenseIdSet = null
 var belt_store: BeltStore = null
 var belt_network: BeltNetwork = null
 var belt_simulator: BeltSimulator = null
+
+# MACHINE SUBSYSTEM
 var machine_id_pool: IdPool = null
 var active_machines: DenseIdSet = null
 var machine_store: MachineStore = null
-var simulation_accumulator: float = 0.0
+var machine_simulator: MachineSimulator = null
 
 
 # Initialization
@@ -57,29 +61,14 @@ func _process(delta: float) -> void:
 
 	while simulation_accumulator >= SIMULATION_INTERVAL:
 		tick(SIMULATION_INTERVAL)
-		update_machines(SIMULATION_INTERVAL)
 		simulation_accumulator -= SIMULATION_INTERVAL
 
 
 func initialize_factory() -> void:
-	initialize_machines(world.size)
-	initialize_belts()
+	_initialize_machines(world.size)
+	_initialize_belts()
 
 	initialized = true
-
-
-func update_machines(delta: float) -> void:
-	for machine_id in active_machines.ids:
-		update_machine(machine_id, delta)
-
-
-func update_machine(machine_id: int, delta: float) -> void:
-	var recipe_id: int = machine_store.recipe_ids[machine_id]
-
-	if recipe_id == EMPTY:
-		return
-
-	# TO DO
 
 
 # True when the tile is out of bounds, already holds a belt or machine, or the
@@ -99,13 +88,14 @@ func tick(delta: float) -> void:
 	if not initialized:
 		return
 	belt_simulator.tick(delta)
+	machine_simulator.tick(delta)
 
 
 # BELT COMMON API
 # The manager owns the world, the id pool, the active set and the clock; belt
 # and item storage lives in BeltStore, topology in BeltNetwork and one step in
 # BeltSimulator.
-func initialize_belts() -> void:
+func _initialize_belts() -> void:
 	simulation_accumulator = 0.0
 
 	if belt_id_pool == null:
@@ -126,6 +116,15 @@ func initialize_belts() -> void:
 		belt_network.reset()
 	if belt_simulator == null:
 		belt_simulator = BeltSimulator.new(belt_store, belt_network, active_belts)
+
+
+func _is_active_belt(belt_id: int) -> bool:
+	return belt_id >= 0 and belt_id < MAX_BELTS and active_belts.contains(belt_id)
+
+
+func _reset_belt_data(belt_id: int) -> void:
+	belt_store.clear_belt(belt_id)
+	belt_network.clear_belt(belt_id)
 
 
 func add_belt(tile_index: int, direction: int, speed: int) -> int:
@@ -199,7 +198,7 @@ func belt_item_count(belt_id: int) -> int:
 # MACHINE COMMON API
 # The manager owns machine IDs, the active set and the clock; machine storage
 # lives in MachineStore. Behaviour moves to MachineSimulator next checkpoint.
-func initialize_machines(map_size: int) -> void:
+func _initialize_machines(map_size: int) -> void:
 	if machine_id_pool == null:
 		machine_id_pool = IdPool.new(MAX_MACHINES)
 	else:
@@ -212,10 +211,8 @@ func initialize_machines(map_size: int) -> void:
 		machine_store = MachineStore.new(MAX_MACHINES, map_size)
 	else:
 		machine_store.reset()
-
-
-func machine_slot(machine_id: int, slot: int) -> int:
-	return machine_store.get_slot_index(machine_id, slot)
+	if machine_simulator == null:
+		machine_simulator = MachineSimulator.new(machine_store, active_machines)
 
 
 func add_machine(tile_index: int, machine_type: int, recipe_id: int = EMPTY) -> int:
@@ -243,95 +240,86 @@ func remove_machine(machine_id: int) -> void:
 	machine_id_pool.release(machine_id)
 
 
-# Benchmark Test
-func run_benchmark(
-	belt_count: int,
-	machine_count: int,
-	occupied_percentage: float = 100.0,
-	items_per_belt: int = 1,
-) -> void:
-	initialize_factory()
-
-	var belts_added := 0
-	var machines_added := 0
-	var occupied_added := 0
-	var items_added := 0
-
-	# Add belts
-	for tile_index in range(MAP_SIZE):
-		if belts_added >= belt_count:
-			break
-
-		var belt_id := add_belt(tile_index, 1, 10)
-
-		if belt_id != EMPTY:
-			belts_added += 1
-
-	# Add machines
-	for tile_index in range(MAP_SIZE):
-		if machines_added >= machine_count:
-			break
-
-		if belt_network.belt_at[tile_index] != EMPTY: # If there is already a belt at that tile index, skip it
-			continue
-
-		var machine_id := add_machine(tile_index, 0)
-
-		if machine_id != EMPTY:
-			machines_added += 1
-
-	# Calculate how many belts should contain items
-	var target_occupied := int(belts_added * clampf(occupied_percentage, 0.0, 100.0) / 100.0)
-
-	# Populate belts
-	for belt_id in active_belts.ids:
-		if occupied_added >= target_occupied:
-			break
-
-		var added_to_belt := 0
-
-		for i in range(items_per_belt):
-			if try_insert_belt_item(belt_id, i):
-				added_to_belt += 1
-				items_added += 1
-			else:
-				break
-
-		if added_to_belt > 0:
-			occupied_added += 1
-
-	print("Benchmark setup complete:")
-	print("Belts: ", belts_added)
-	print("Machines: ", machines_added)
-	print("Occupied belts: ", occupied_added)
-	print("Items: ", items_added)
-	print("Occupied list size: ", belt_store.occupited.size())
-
-
-func update_factory_performance(delta: float) -> void:
-	var start_time := Time.get_ticks_usec()
-
-	belt_simulator.tick(delta)
-
-	var belt_time := Time.get_ticks_usec() - start_time
-
-	start_time = Time.get_ticks_usec()
-
-	update_machines(delta)
-
-	var machine_time := Time.get_ticks_usec() - start_time
-
-	print("Belts: ", belt_time / 1000.0, " ms | ", "Machines: ", machine_time / 1000.0, " ms")
-
-
-func _is_active_belt(belt_id: int) -> bool:
-	return belt_id >= 0 and belt_id < MAX_BELTS and active_belts.contains(belt_id)
-
-
-func _reset_belt_data(belt_id: int) -> void:
-	belt_store.clear_belt(belt_id)
-	belt_network.clear_belt(belt_id)
-
-
 func _is_active_machine(machine_id: int) -> bool:
 	return machine_id >= 0 and machine_id < MAX_MACHINES and active_machines.contains(machine_id)
+
+#
+#func update_factory_performance(delta: float) -> void:
+#var start_time := Time.get_ticks_usec()
+#
+#belt_simulator.tick(delta)
+#
+#var belt_time := Time.get_ticks_usec() - start_time
+#
+#start_time = Time.get_ticks_usec()
+#
+#update_machines(delta)
+#
+#var machine_time := Time.get_ticks_usec() - start_time
+#
+#print("Belts: ", belt_time / 1000.0, " ms | ", "Machines: ", machine_time / 1000.0, " ms")
+#
+
+## Benchmark Test
+#func run_benchmark(
+#belt_count: int,
+#machine_count: int,
+#occupied_percentage: float = 100.0,
+#items_per_belt: int = 1,
+#) -> void:
+#initialize_factory()
+#
+#var belts_added := 0
+#var machines_added := 0
+#var occupied_added := 0
+#var items_added := 0
+#
+## Add belts
+#for tile_index in range(MAP_SIZE):
+#if belts_added >= belt_count:
+#break
+#
+#var belt_id := add_belt(tile_index, 1, 10)
+#
+#if belt_id != EMPTY:
+#belts_added += 1
+#
+## Add machines
+#for tile_index in range(MAP_SIZE):
+#if machines_added >= machine_count:
+#break
+#
+#if belt_network.belt_at[tile_index] != EMPTY: # If there is already a belt at that tile index, skip it
+#continue
+#
+#var machine_id := add_machine(tile_index, 0)
+#
+#if machine_id != EMPTY:
+#machines_added += 1
+#
+## Calculate how many belts should contain items
+#var target_occupied := int(belts_added * clampf(occupied_percentage, 0.0, 100.0) / 100.0)
+#
+## Populate belts
+#for belt_id in active_belts.ids:
+#if occupied_added >= target_occupied:
+#break
+#
+#var added_to_belt := 0
+#
+#for i in range(items_per_belt):
+#if try_insert_belt_item(belt_id, i):
+#added_to_belt += 1
+#items_added += 1
+#else:
+#break
+#
+#if added_to_belt > 0:
+#occupied_added += 1
+#
+#print("Benchmark setup complete:")
+#print("Belts: ", belts_added)
+#print("Machines: ", machines_added)
+#print("Occupied belts: ", occupied_added)
+#print("Items: ", items_added)
+#print("Occupied list size: ", belt_store.occupited.size())

@@ -274,7 +274,7 @@ func test_reinitialize_clears_all_belts_and_items() -> void:
 	var id := _add(1001)
 
 	assert_true(belts.try_insert_belt_item(id, 42))
-	belts.initialize_belts()
+	belts.initialize_factory()
 
 	assert_eq(belts.active_belts.size(), 0)
 	assert_eq(belts.belt_store.occupied.size(), 0)

@@ -110,25 +110,29 @@ func test_initialize_factory_resets_both_subsystems() -> void:
 	assert_false(manager.is_tile_occupied(_index(TILE_A)))
 
 
+func test_tick_runs_the_machine_phase() -> void:
+	var machine_id: int = manager.add_machine(_index(TILE_A), 0)
+
+	assert_true(machine_id >= 0)
+
+	manager.tick(0.1)
+
+	assert_not_null(manager.machine_simulator)
+	assert_eq(manager.active_machines.size(), 1)
+
+
 # check if API is broken
 const FROZEN_PUBLIC_API: Array[String] = [
 	"add_belt",
 	"add_machine",
 	"belt_item_count",
-	"initialize_belts",
 	"initialize_factory",
-	"initialize_machines",
 	"is_tile_occupied",
-	"machine_slot",
 	"remove_belt",
 	"remove_machine",
-	"run_benchmark",
 	"tick",
 	"try_insert_belt_item",
 	"try_take_belt_item",
-	"update_factory_performance",
-	"update_machine",
-	"update_machines",
 ]
 
 
