@@ -4,7 +4,7 @@ extends RefCounted
 
 # Holds the struct-of-arrays belt fields and the flattened item slots, plus the
 # set of belts that currently carry at least one item.
-# enforceable the item-count invariant  in one place.
+# enforce the item-count invariant  in one place.
 
 const EMPTY: int = -1
 const MAX_ITEMS_PER_BELT: int = 4

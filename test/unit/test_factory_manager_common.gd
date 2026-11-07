@@ -104,9 +104,9 @@ func test_initialize_factory_resets_both_subsystems() -> void:
 	manager.initialize_factory()
 
 	assert_eq(manager.active_belts.size(), 0)
-	assert_eq(manager.active_machine_ids.size(), 0)
+	assert_eq(manager.active_machines.size(), 0)
 	assert_eq(manager.belt_store.item_count(belt_id), 0)
-	assert_eq(manager.machine_at[_index(TILE_B)], FactoryManager.EMPTY)
+	assert_eq(manager.machine_store.machine_at[_index(TILE_B)], FactoryManager.EMPTY)
 	assert_false(manager.is_tile_occupied(_index(TILE_A)))
 
 
