@@ -64,6 +64,7 @@ func _process(delta: float) -> void:
 		simulation_accumulator -= SIMULATION_INTERVAL
 
 
+## Sets all the factory simulation data to its default values
 func initialize_factory() -> void:
 	_initialize_machines(world.size)
 	_initialize_belts()
@@ -71,8 +72,8 @@ func initialize_factory() -> void:
 	initialized = true
 
 
-# True when the tile is out of bounds, already holds a belt or machine, or the
-# world reports a building there. Belts and machines must not share a tile.
+## True when the tile is out of bounds, already holds a belt or machine, or
+## factory world class reports a building there. Belts and machines must not share a tile.
 func is_tile_occupied(tile_index: int) -> bool:
 	if tile_index < 0 or tile_index >= world.size:
 		return true
@@ -83,7 +84,7 @@ func is_tile_occupied(tile_index: int) -> bool:
 	return not world.is_empty_index(tile_index)
 
 
-# Advance the simulation by delta seconds.
+## Advance the simulation by delta seconds.
 func tick(delta: float) -> void:
 	if not initialized:
 		return
@@ -93,7 +94,7 @@ func tick(delta: float) -> void:
 
 # BELT COMMON API
 # The manager owns the world, the id pool, the active set and the clock; belt
-# and item storage lives in BeltStore, topology in BeltNetwork and one step in
+# and item storage lives in BeltStore, topology in BeltNetwork, simulation updates in
 # BeltSimulator.
 func _initialize_belts() -> void:
 	simulation_accumulator = 0.0
@@ -127,6 +128,9 @@ func _reset_belt_data(belt_id: int) -> void:
 	belt_network.clear_belt(belt_id)
 
 
+## Tries to add a belt at given index, with given direction and speed
+## and updates the connections to the neighbouring belts
+## If it succeeds, it returns the id assigned, otherwise it returns -1
 func add_belt(tile_index: int, direction: int, speed: int) -> int:
 	if not initialized:
 		return EMPTY
@@ -135,6 +139,7 @@ func add_belt(tile_index: int, direction: int, speed: int) -> int:
 	if direction < 0 or direction >= BeltNetwork.Direction.size():
 		return EMPTY
 	if speed < 0 or speed > 255:
+		push_error("Invalid belt speed")
 		return EMPTY
 	# The placement controller registers the global building after this call.
 	if is_tile_occupied(tile_index):
@@ -151,6 +156,7 @@ func add_belt(tile_index: int, direction: int, speed: int) -> int:
 	return belt_id
 
 
+## removes the belt with the given id
 func remove_belt(belt_id: int) -> void:
 	if not _is_active_belt(belt_id):
 		return
@@ -163,6 +169,8 @@ func remove_belt(belt_id: int) -> void:
 	belt_network.refresh_near(tile_index)
 
 
+## tries to insert the given item into the belt
+## If succeeds, return true, false otherwise
 func try_insert_belt_item(belt_id: int, resource_id: int) -> bool:
 	if not _is_active_belt(belt_id) or resource_id < 0:
 		return false
@@ -174,6 +182,8 @@ func try_insert_belt_item(belt_id: int, resource_id: int) -> bool:
 	return true
 
 
+## Tries to remove the given item from a belt
+## If succeeds, return true, false otherwise
 func try_take_belt_item(belt_id: int, resource_id: int) -> bool:
 	if not _is_active_belt(belt_id):
 		return false
@@ -189,6 +199,7 @@ func try_take_belt_item(belt_id: int, resource_id: int) -> bool:
 	return false
 
 
+## Gets the current item count of the given belt
 func belt_item_count(belt_id: int) -> int:
 	if not _is_active_belt(belt_id):
 		return 0
@@ -215,6 +226,8 @@ func _initialize_machines(map_size: int) -> void:
 		machine_simulator = MachineSimulator.new(machine_store, active_machines)
 
 
+## Tries to add the given machine at the given location with the given recipe
+## If succeedes returns the id assigned to the machine, otherwise returns -1
 func add_machine(tile_index: int, machine_type: int, recipe_id: int = EMPTY) -> int:
 	if not initialized:
 		return EMPTY
@@ -231,6 +244,7 @@ func add_machine(tile_index: int, machine_type: int, recipe_id: int = EMPTY) -> 
 	return machine_id
 
 
+## removes the given machine
 func remove_machine(machine_id: int) -> void:
 	if not _is_active_machine(machine_id):
 		return

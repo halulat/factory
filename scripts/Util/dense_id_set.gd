@@ -1,3 +1,5 @@
+## Utility class used to manage the insertion and removal of ids of
+## paired id & position arrays. Allows O(1) insertion and removal
 class_name DenseIdSet
 extends RefCounted
 

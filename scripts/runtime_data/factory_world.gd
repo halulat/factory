@@ -1,3 +1,4 @@
+## Keeps track of the occupancy of the game world
 class_name FactoryWorld
 extends RefCounted
 
@@ -13,7 +14,7 @@ var size: int
 # Tile index -> building ID
 var cells: PackedInt32Array = PackedInt32Array()
 # Building ID -> tile index
-var building_positions: Dictionary[int, int] = {}
+var building_positions: Dictionary[int, int] = { }
 
 
 func _init(w: int = 500, h: int = 500) -> void:

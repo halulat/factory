@@ -1,9 +1,9 @@
+## A pool of IDs. Keeps track of which ids are taken, and which IDs are free.
 class_name IdPool
 extends RefCounted
 
 # mangaes all the instance ids
 const INVALID_ID: int = -1
-
 
 var capacity: int
 var free_ids: PackedInt32Array = PackedInt32Array()
@@ -26,6 +26,8 @@ func reset() -> void:
 		free_ids[i] = capacity - 1 - i
 
 
+## returns an ID that is currently not in use,
+## if all are in use, returns -1
 func acquire() -> int:
 	if free_ids.is_empty():
 		return INVALID_ID
@@ -37,6 +39,7 @@ func acquire() -> int:
 	return id
 
 
+## Releases the ID back into the pool of free IDs
 func release(id: int) -> bool:
 	if not is_allocated(id):
 		return false
@@ -46,10 +49,12 @@ func release(id: int) -> bool:
 	return true
 
 
+## checks if the id is allocated
 func is_allocated(id: int) -> bool:
 	return id >= 0 and id < capacity and allocated[id] == 1
 
 
+## returns the number of available IDs
 func available_count() -> int:
 	return free_ids.size()
 

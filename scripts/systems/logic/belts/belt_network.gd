@@ -1,7 +1,7 @@
+## Holds the Topology of the belt graph: which belt occupies which tile, and which belt
+## each belt outputs into. It reads position and direction from BeltStore
 class_name BeltNetwork
 extends RefCounted
-# Topology of the belt graph: which belt occupies which tile, and which belt
-# each belt outputs into. It reads position and direction from BeltStore
 
 enum Direction {
 	UP,

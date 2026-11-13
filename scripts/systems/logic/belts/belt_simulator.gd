@@ -21,6 +21,7 @@ func _init(store: BeltStore, network: BeltNetwork, active_belts: DenseIdSet) -> 
 	_active_belts = active_belts
 
 
+## advance the simulation by delta time
 func tick(delta: float) -> void:
 	for belt_id in _store.occupied.ids:
 		move_items(belt_id, delta)
@@ -32,7 +33,7 @@ func tick(delta: float) -> void:
 			transfer_items(belt_id)
 
 
-# Advance every item on one belt by speed * delta.
+## Advance every item on one belt by speed * delta.
 func move_items(belt_id: int, delta: float) -> void:
 	var movement: float = float(_store.speeds[belt_id]) * delta
 	for slot in range(BeltStore.MAX_ITEMS_PER_BELT):
@@ -41,8 +42,8 @@ func move_items(belt_id: int, delta: float) -> void:
 			_store.item_positions[index] += movement
 
 
-# Move every item that reached the exit onto the downstream belt, when it has
-# room. Item counts are updated once per belt, after all items moved.
+## Move every item that reached the exit onto the downstream belt, when it has
+## room. Item counts are updated once per belt, after all items moved.
 func transfer_items(belt_id: int) -> void:
 	var next_belt: int = _network.next_indices[belt_id]
 	if not _active_belts.contains(next_belt) or next_belt == belt_id:
