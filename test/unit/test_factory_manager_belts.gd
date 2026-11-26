@@ -251,7 +251,7 @@ func test_blocked_destination_keeps_item_on_source() -> void:
 	assert_true(belts.try_insert_belt_item(destination, 99))
 
 	belts.belt_store.item_positions[_item_index(source)] = 1.0
-	belts.belt_simulator.transfer_items(source)
+	belts.belt_simulator.transfer_items(source, 1)
 
 	assert_eq(int(belts.belt_store.item_counts[source]), 1)
 	assert_eq(int(belts.belt_store.item_counts[destination]), 1)
