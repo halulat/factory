@@ -26,6 +26,7 @@ var item_counts: PackedByteArray
 var item_types: PackedInt32Array
 var item_positions: PackedFloat32Array
 var item_ids: PackedInt32Array
+var _ordered_slots: Array[int] = []
 
 ## Belts with at least one item. Maintained by change_item_count().
 ## the simulator only needs to update the belts that are occupied
@@ -132,3 +133,20 @@ func change_item_count(belt_id: int, change: int) -> void:
 ## gets the amount of Items of given belt
 func item_count(belt_id: int) -> int:
 	return item_counts[belt_id]
+
+
+func get_ordered_slots(belt_id: int) -> Array[int]:
+	_ordered_slots.clear()
+
+	for slot in range(MAX_ITEMS_PER_BELT):
+		var index: int = get_item_index(belt_id, slot)
+		if item_types[index] != EMPTY:
+			_ordered_slots.append(slot)
+
+	_ordered_slots.sort_custom(
+		func(a: int, b: int) -> bool:
+			return item_positions[get_item_index(belt_id, a)] > \
+					item_positions[get_item_index(belt_id, b)],
+	)
+
+	return _ordered_slots
