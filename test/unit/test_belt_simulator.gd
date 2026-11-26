@@ -29,8 +29,8 @@ func _place(belt_id: int, tile: int, direction: int, speed: int = 1) -> void:
 	network.refresh_near(tile)
 
 
-func _add_item(belt_id: int, slot: int, item_type: int, position: float) -> void:
-	store.put_item(belt_id, slot, item_type, position)
+func _add_item(belt_id: int, slot: int, item_type: int, position: float, item_id) -> void:
+	store.put_item(belt_id, slot, item_type, position, item_id)
 	store.change_item_count(belt_id, 1)
 
 
@@ -47,7 +47,7 @@ func _total_items() -> int:
 
 func test_move_items_advances_by_speed_times_delta() -> void:
 	_place(0, 1001, BeltNetwork.Direction.RIGHT, 2)
-	_add_item(0, 0, 42, 0.1)
+	_add_item(0, 0, 42, 0.1, 1)
 
 	simulator.move_items(0, 0.1)
 
@@ -56,7 +56,7 @@ func test_move_items_advances_by_speed_times_delta() -> void:
 
 func test_zero_speed_belt_does_not_move_items() -> void:
 	_place(0, 1001, BeltNetwork.Direction.RIGHT, 0)
-	_add_item(0, 0, 42, 0.5)
+	_add_item(0, 0, 42, 0.5, 1)
 
 	simulator.tick(1.0)
 
@@ -66,7 +66,7 @@ func test_zero_speed_belt_does_not_move_items() -> void:
 func test_tick_transfers_item_at_exit() -> void:
 	_place(0, 1001, BeltNetwork.Direction.RIGHT)
 	_place(1, 1002, BeltNetwork.Direction.RIGHT)
-	_add_item(0, 0, 42, 1.1)
+	_add_item(0, 0, 42, 1.1, 2)
 
 	simulator.tick(0.0)
 
@@ -78,7 +78,7 @@ func test_tick_transfers_item_at_exit() -> void:
 func test_tick_moves_before_transferring() -> void:
 	_place(0, 1001, BeltNetwork.Direction.RIGHT)
 	_place(1, 1002, BeltNetwork.Direction.RIGHT)
-	_add_item(0, 0, 42, 0.95)
+	_add_item(0, 0, 42, 0.95, 1)
 
 	simulator.tick(0.1)
 
@@ -92,8 +92,8 @@ func test_blocked_destination_keeps_item_on_source() -> void:
 	_place(0, 1001, BeltNetwork.Direction.RIGHT)
 	_place(1, 1002, BeltNetwork.Direction.RIGHT)
 	for slot in range(BeltStore.MAX_ITEMS_PER_BELT):
-		_add_item(1, slot, 100 + slot, float(slot) * 0.25)
-	_add_item(0, 0, 42, 1.0)
+		_add_item(1, slot, 100 + slot, float(slot) * 0.25, slot)
+	_add_item(0, 0, 42, 1.0, BeltStore.MAX_ITEMS_PER_BELT + 1)
 
 	simulator.tick(0.0)
 
@@ -106,11 +106,11 @@ func test_two_sources_to_one_free_slot_transfers_exactly_one() -> void:
 	# dest at 1002 has one free slot; both 1001 and 2 point into it.
 	_place(1, 1002, BeltNetwork.Direction.RIGHT)
 	for slot in range(BeltStore.MAX_ITEMS_PER_BELT - 1):
-		_add_item(1, slot, 100 + slot, 0.5 + float(slot) * 0.25)
+		_add_item(1, slot, 100 + slot, 0.5 + float(slot) * 0.25, slot)
 	_place(0, 1001, BeltNetwork.Direction.RIGHT)
 	_place(3, 2, BeltNetwork.Direction.DOWN)
-	_add_item(0, 0, 42, 1.0)
-	_add_item(3, 0, 43, 1.0)
+	_add_item(0, 0, 42, 1.0, BeltStore.MAX_ITEMS_PER_BELT)
+	_add_item(3, 0, 43, 1.0, BeltStore.MAX_ITEMS_PER_BELT + 1)
 
 	simulator.tick(0.0)
 
@@ -127,7 +127,7 @@ func test_transfer_requires_active_destination() -> void:
 	store.grid_indices[1] = 1002
 	network.register(1, 1002)
 	network.refresh_near(1001)
-	_add_item(0, 0, 42, 1.0)
+	_add_item(0, 0, 42, 1.0, 1)
 
 	simulator.tick(0.0)
 
@@ -138,8 +138,8 @@ func test_transfer_requires_active_destination() -> void:
 func test_thousand_tick_soak_conserves_items() -> void:
 	_place(0, 1001, BeltNetwork.Direction.RIGHT)
 	_place(1, 1002, BeltNetwork.Direction.RIGHT)
-	_add_item(0, 0, 42, 0.1)
-	_add_item(0, 1, 43, 0.5)
+	_add_item(0, 0, 42, 0.1, 1)
+	_add_item(0, 1, 43, 0.5, 2)
 	assert_eq(_total_items(), 2)
 
 	for _tick in range(1000):

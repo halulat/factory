@@ -63,7 +63,8 @@ func transfer_items(belt_id: int) -> void:
 		if destination_slot == BeltStore.EMPTY:
 			continue
 
-		_store.put_item(next_belt, destination_slot, item_type, new_position)
+		var item_id: int = _store.item_ids[index]
+		_store.put_item(next_belt, destination_slot, item_type, new_position, item_id)
 		_store.take_item(belt_id, slot)
 		transferred_count += 1
 

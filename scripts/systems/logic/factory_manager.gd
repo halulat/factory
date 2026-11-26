@@ -29,12 +29,15 @@ var world: FactoryWorld = null
 const MAX_BELTS: int = 50000
 const MAX_ITEMS_PER_BELT: int = BeltStore.MAX_ITEMS_PER_BELT
 const MIN_ITEM_SPACING: float = BeltStore.MIN_ITEM_SPACING
+const MAX_ITEMS = MAX_BELTS * 4 # change if belts can hold diff amount of items
 
 var belt_id_pool: IdPool = null
 var active_belts: DenseIdSet = null
 var belt_store: BeltStore = null
 var belt_network: BeltNetwork = null
 var belt_simulator: BeltSimulator = null
+
+var belt_item_id_pool: IdPool = null
 
 # MACHINE SUBSYSTEM
 var machine_id_pool: IdPool = null
@@ -99,6 +102,10 @@ func tick(delta: float) -> void:
 func _initialize_belts() -> void:
 	simulation_accumulator = 0.0
 
+	if belt_item_id_pool == null:
+		belt_item_id_pool = IdPool.new(MAX_ITEMS)
+	else:
+		belt_item_id_pool.reset()
 	if belt_id_pool == null:
 		belt_id_pool = IdPool.new(MAX_BELTS)
 	else:
@@ -138,7 +145,7 @@ func add_belt(tile_index: int, direction: int, speed: int) -> int:
 		return EMPTY
 	if direction < 0 or direction >= BeltNetwork.Direction.size():
 		return EMPTY
-	if speed < 0 or speed > 255:
+	if speed < 0 or speed > INT8_MAX:
 		#push_error("Invalid belt speed")
 		return EMPTY
 	# The placement controller registers the global building after this call.
@@ -174,10 +181,16 @@ func remove_belt(belt_id: int) -> void:
 func try_insert_belt_item(belt_id: int, resource_id: int) -> bool:
 	if not _is_active_belt(belt_id) or resource_id < 0:
 		return false
+
 	var slot: int = belt_store.find_free_slot(belt_id, 0.0)
 	if slot == EMPTY:
 		return false
-	belt_store.put_item(belt_id, slot, resource_id, 0.0)
+
+	var item_id: int = belt_item_id_pool.acquire()
+	if item_id == EMPTY:
+		return false
+
+	belt_store.put_item(belt_id, slot, resource_id, 0.0, item_id)
 	belt_store.change_item_count(belt_id, 1)
 	return true
 
@@ -193,7 +206,9 @@ func try_take_belt_item(belt_id: int, resource_id: int) -> bool:
 			continue
 		if belt_store.item_positions[index] < BeltStore.EXIT_POSITION:
 			continue
+		var item_id: int = belt_store.item_ids[index]
 		belt_store.take_item(belt_id, slot)
+		belt_item_id_pool.release(item_id)
 		belt_store.change_item_count(belt_id, -1)
 		return true
 	return false
