@@ -12,7 +12,7 @@ const Direction = BeltNetwork.Direction
 
 # Simulation timer
 const SIMULATION_INTERVAL: float = 1.0 / SIMULATION_UPDATES_PER_SECOND # Time inbetween updates (if simulating one frame exceeds this, the game will lag)
-const SIMULATION_UPDATES_PER_SECOND: float = 10.0
+const SIMULATION_UPDATES_PER_SECOND: float = 60.0
 var simulation_accumulator: float = 0.0
 
 # MACHINES
@@ -21,7 +21,8 @@ const MAX_MACHINES: int = 50000
 const MAX_MACHINE_SLOTS: int = MachineStore.MAX_MACHINE_SLOTS
 
 # Common
-var catalog = FactoryCatalog
+@export var catalog: FactoryCatalog
+@export var item_renderer: ItemRenderer
 var initialized: bool = false
 var world: FactoryWorld = null
 
@@ -74,11 +75,26 @@ func initialize_factory() -> void:
 
 	initialized = true
 
+## Converts a flattened tile index into a Vector2i of its position
+static func tile_index_to_vector(tile_idx: int) -> Vector2i:
+	return Vector2i(tile_idx % MAP_WIDTH, int(float(tile_idx) / MAP_WIDTH))
 
+## Converts position of a Vector2i into a flattened index
+static func flatten_tile_index(tile_pos: Vector2i) -> int:
+	return int(tile_pos.y) * MAP_WIDTH + int(tile_pos.x)
+
+## Returns true when tile index is within world bounds
+func is_index_in_bounds(tile_index: int) -> bool:
+		return tile_index >= 0 and tile_index < world.size
+
+## Returns true when vector position is within world bounds
+func is_pos_in_bounds(pos: Vector2i) -> bool:
+	return pos.x >= 0 and pos.y >= 0 and pos.x < world.width and pos.y < world.height 
+		
 ## True when the tile is out of bounds, already holds a belt or machine, or
 ## factory world class reports a building there. Belts and machines must not share a tile.
 func is_tile_occupied(tile_index: int) -> bool:
-	if tile_index < 0 or tile_index >= world.size:
+	if !is_index_in_bounds(tile_index):
 		return true
 	if belt_network != null and belt_network.belt_at[tile_index] != EMPTY:
 		return true
@@ -168,6 +184,13 @@ func remove_belt(belt_id: int) -> void:
 	if not _is_active_belt(belt_id):
 		return
 
+	# clears the item sprites drawn on top of this belt
+	if item_renderer != null:
+		for idx in range(0, belt_store.MAX_ITEMS_PER_BELT):
+			var item_idx = belt_store.get_item_index(belt_id, idx)
+			var item_id = belt_store.item_ids[item_idx]
+			item_renderer.delete_item_render(item_id)
+		
 	var tile_index: int = belt_store.grid_indices[belt_id]
 	belt_network.unregister(belt_id, tile_index)
 	belt_store.clear_belt(belt_id)
@@ -192,6 +215,11 @@ func try_insert_belt_item(belt_id: int, resource_id: int) -> bool:
 
 	belt_store.put_item(belt_id, slot, resource_id, 0.0, item_id)
 	belt_store.change_item_count(belt_id, 1)
+	
+	if item_renderer != null:
+		var resource_texture: AtlasTexture = catalog.resource_resources[resource_id].icon
+		item_renderer.create_item_render(item_id, tile_index_to_vector(belt_store.grid_indices[belt_id]), resource_texture)
+	
 	return true
 
 
@@ -208,6 +236,10 @@ func try_take_belt_item(belt_id: int, resource_id: int) -> bool:
 			continue
 		var item_id: int = belt_store.item_ids[index]
 		belt_store.take_item(belt_id, slot)
+		
+		if item_renderer != null:
+			item_renderer.delete_item_render(item_id)
+		
 		belt_item_id_pool.release(item_id)
 		belt_store.change_item_count(belt_id, -1)
 		return true
@@ -219,6 +251,18 @@ func belt_item_count(belt_id: int) -> int:
 	if not _is_active_belt(belt_id):
 		return 0
 	return belt_store.item_count(belt_id)
+
+## Replaces existing belt with a new one.
+## Allows items to remain if direction is unchanged, otherwise completely replaces the belt
+func replace_existing_belt(belt_id: int, direction: Direction, speed: int):
+	if belt_store.directions[belt_id] == direction:
+		if speed < 0 or speed > INT8_MAX:
+			return
+		belt_store.speeds[belt_id] = speed
+	else:
+		var tile_index = belt_store.grid_indices[belt_id]
+		remove_belt(belt_id)
+		add_belt(tile_index, direction, speed)
 
 
 # MACHINE COMMON API

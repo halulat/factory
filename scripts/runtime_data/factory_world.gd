@@ -44,6 +44,7 @@ func pos_to_index(pos: Vector2i) -> int:
 
 # Caller should pass a valid index.
 func index_to_pos(index: int) -> Vector2i:
+	@warning_ignore("integer_division")
 	return Vector2i(index % width, index / width)
 
 

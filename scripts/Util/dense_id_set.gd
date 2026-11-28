@@ -32,7 +32,6 @@ func add(id: int) -> bool:
 func remove(id: int) -> bool:
 	if not contains(id):
 		return false
-
 	var position: int = positions[id]
 	var last_index: int = ids.size() - 1
 	var last_id: int = ids[last_index]

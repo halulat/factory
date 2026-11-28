@@ -34,6 +34,8 @@ func _ready() -> void:
 	#var test_2 = test as BuildingDefinition
 	#set_index_to_building(1, test_2)
 	
+	var belt_def = preload("uid://b801uavjhwjcv")
+	set_index_to_building(0, belt_def)
 	update_hotbar()
 	
 func _configure_buttons():
@@ -72,10 +74,32 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	
 	
-	if event.keycode >= KEY_1 and event.keycode <= KEY_9:
-		select_index(event.keycode - KEY_1) # adjust for 0 indexing
-	elif event.keycode == KEY_0:
-		select_index(9)
+	#if event.keycode >= KEY_1 and event.keycode <= KEY_9:
+		#select_index(event.keycode - KEY_1) # adjust for 0 indexing
+	#elif event.keycode == KEY_0:
+		#select_index(9)
+		
+	# very ugly but allows customization
+	if event.is_action("select_hotbar_slot_1", true):
+			return select_index(0)
+	elif event.is_action("select_hotbar_slot_2", true):
+			return select_index(1)
+	elif event.is_action("select_hotbar_slot_3", true):
+			return select_index(2)
+	elif event.is_action("select_hotbar_slot_4", true):
+			return select_index(3)
+	elif event.is_action("select_hotbar_slot_5", true):
+			return select_index(4)
+	elif event.is_action("select_hotbar_slot_6", true):
+			return select_index(5)
+	elif event.is_action("select_hotbar_slot_7", true):
+			return select_index(6)
+	elif event.is_action("select_hotbar_slot_8", true):
+			return select_index(7)
+	elif event.is_action("select_hotbar_slot_9", true):
+			return select_index(8)
+	elif event.is_action("select_hotbar_slot_0", true):
+			return select_index(9)
 		
 
 # slects the slot of given index in array

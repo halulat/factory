@@ -1,7 +1,7 @@
 extends Camera2D
 
-@export var zoom_speed: float = 10
-@export var pan_speed: float = 1000
+@export var zoom_speed: float = 20
+@export var pan_speed: float = 1500
 
 var zoom_target: Vector2
 var drag_start_mouse_pos: Vector2
@@ -20,12 +20,10 @@ func _process(delta: float):
 	drag_pan()
 
 func zoomCamera(delta: float):
-	if Input.is_key_pressed(KEY_CTRL):
-		return
-	if Input.is_action_just_pressed("camera_zoom_in"):
+	if Input.is_action_just_pressed("camera_zoom_in", true):
 		zoom_target *= 1.1
 	
-	if Input.is_action_just_pressed("camera_zoom_out"):
+	if Input.is_action_just_pressed("camera_zoom_out", true):
 		zoom_target *= 0.9
 	
 	zoom = zoom.slerp(zoom_target, zoom_speed * delta)

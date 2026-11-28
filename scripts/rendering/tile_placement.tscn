@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://g1rlk2f0gnxg"]
 
-[ext_resource type="Script" uid="uid://dc24mk52kpm2b" path="res://scenes/tile_placement.gd" id="1_mjf3l"]
+[ext_resource type="Script" uid="uid://dc24mk52kpm2b" path="res://scripts/rendering/tile_placement.gd" id="1_mjf3l"]
 [ext_resource type="Texture2D" uid="uid://gc8vp61lbacp" path="res://assets/Belts.png" id="2_07dpc"]
 [ext_resource type="Texture2D" uid="uid://ut7iuojls3" path="res://assets/Delete_Anim.png" id="3_07dpc"]
 
@@ -259,6 +259,7 @@ sources/0 = SubResource("TileSetAtlasSource_mjf3l")
 sources/1 = SubResource("TileSetAtlasSource_c8stx")
 
 [node name="TilePlacement" type="Node2D" unique_id=668171513]
+scale = Vector2(4, 4)
 script = ExtResource("1_mjf3l")
 
 [node name="Ground" type="TileMapLayer" parent="." unique_id=535397880]

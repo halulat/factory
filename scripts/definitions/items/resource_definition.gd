@@ -7,4 +7,4 @@ extends DataDefinition
 @export var max_stack: int = 100
 
 @export_group("Visuals")
-@export var icon: Texture2D
+@export var icon: AtlasTexture

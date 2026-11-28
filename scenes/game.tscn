@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://bcs8mlhead6y8"]
 
-[ext_resource type="PackedScene" uid="uid://g1rlk2f0gnxg" path="res://scenes/tile_placement.tscn" id="1_yqjtg"]
-[ext_resource type="Script" uid="uid://b2f25tsij3uqh" path="res://scenes/camera_controller.gd" id="2_lnu2h"]
-[ext_resource type="PackedScene" uid="uid://cwbpkl5svn1fb" path="res://scenes/building_manager.tscn" id="3_lnu2h"]
+[ext_resource type="PackedScene" uid="uid://g1rlk2f0gnxg" path="res://scripts/rendering/tile_placement.tscn" id="1_yqjtg"]
+[ext_resource type="Script" uid="uid://b2f25tsij3uqh" path="res://scripts/rendering/camera_controller.gd" id="2_lnu2h"]
 [ext_resource type="Script" uid="uid://dqremj44s4uon" path="res://scripts/systems/logic/factory_manager.gd" id="4_ir15t"]
 [ext_resource type="Script" uid="uid://dlftengbgphhn" path="res://scripts/definitions/factory_catalog.gd" id="5_ca42v"]
 [ext_resource type="Script" uid="uid://chb4d6bj1ky5g" path="res://scripts/definitions/items/resource_definition.gd" id="5_kvpfn"]
 [ext_resource type="Resource" uid="uid://b0d3mpbqs5i7o" path="res://data_definitions/resources/coal.tres" id="6_dinhu"]
 [ext_resource type="Resource" uid="uid://c7irvcys3rq1b" path="res://data_definitions/resources/iron.tres" id="7_kvuet"]
+[ext_resource type="Resource" uid="uid://dfyyr6igh6rr0" path="res://data_definitions/resources/copper.tres" id="8_rysoc"]
 [ext_resource type="Resource" uid="uid://4c1ms0hgv6ob" path="res://data_definitions/resources/steel.tres" id="8_trtic"]
 [ext_resource type="Script" uid="uid://cxyjuhk6qn8x5" path="res://scripts/definitions/recipes/recipe_definition.gd" id="9_ir15t"]
 [ext_resource type="Resource" uid="uid://b0agss8il421m" path="res://data_definitions/recipes/steel_recipe.tres" id="10_ca42v"]
@@ -15,22 +15,40 @@
 [ext_resource type="Resource" uid="uid://b801uavjhwjcv" path="res://data_definitions/belts/basic_belt.tres" id="11_ssvqc"]
 [ext_resource type="Script" uid="uid://bo7yrdfojrcih" path="res://scripts/definitions/buildings/machine_definition.gd" id="12_264po"]
 [ext_resource type="Resource" uid="uid://ds5dkqwwljfp7" path="res://data_definitions/machines/smelter.tres" id="13_1kice"]
+[ext_resource type="PackedScene" uid="uid://nlh5lk6vjjim" path="res://scripts/rendering/item_renderer.tscn" id="15_ca42v"]
+[ext_resource type="Script" uid="uid://xltst38f10fp" path="res://scripts/rendering/item_renderer.gd" id="16_rysoc"]
+[ext_resource type="PackedScene" uid="uid://d3qyq8k5sdyta" path="res://scripts/ui/keybind_remap.tscn" id="18_264po"]
+[ext_resource type="PackedScene" uid="uid://4iu0740ortog" path="res://scripts/ui/factory_building_ui.tscn" id="19_264po"]
 
 [node name="Game" type="Node2D" unique_id=484294181]
 
-[node name="TilePlacement" parent="." unique_id=668171513 instance=ExtResource("1_yqjtg")]
+[node name="TilePlacement" parent="." unique_id=668171513 node_paths=PackedStringArray("factory_manager") instance=ExtResource("1_yqjtg")]
+factory_manager = NodePath("../FactoryManager")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=844805190]
 script = ExtResource("2_lnu2h")
 
-[node name="BuildingManager" parent="." unique_id=2013991985 instance=ExtResource("3_lnu2h")]
-
-[node name="FactoryManager" type="Node" parent="." unique_id=1337293418]
-script = ExtResource("4_ir15t")
-
 [node name="FactoryCatalog" type="Node" parent="." unique_id=584227353]
 script = ExtResource("5_ca42v")
-resource_resources = Array[ExtResource("5_kvpfn")]([ExtResource("6_dinhu"), ExtResource("7_kvuet"), ExtResource("8_trtic")])
+resource_resources = Array[ExtResource("5_kvpfn")]([ExtResource("6_dinhu"), ExtResource("7_kvuet"), ExtResource("8_trtic"), ExtResource("8_rysoc")])
 belt_resources = Array[ExtResource("10_rysoc")]([ExtResource("11_ssvqc")])
 machine_resources = Array[ExtResource("12_264po")]([ExtResource("13_1kice")])
 recipe_resources = Array[ExtResource("9_ir15t")]([ExtResource("10_ca42v")])
+
+[node name="FactoryManager" type="Node" parent="." unique_id=635442486 node_paths=PackedStringArray("catalog", "item_renderer")]
+script = ExtResource("4_ir15t")
+catalog = NodePath("../FactoryCatalog")
+item_renderer = NodePath("../ItemRenderer")
+
+[node name="ItemRenderer" parent="." unique_id=307064938 node_paths=PackedStringArray("factory_manager") instance=ExtResource("15_ca42v")]
+z_index = 2
+script = ExtResource("16_rysoc")
+factory_manager = NodePath("../FactoryManager")
+
+[node name="KeybindRemapUI" parent="." unique_id=2008140194 instance=ExtResource("18_264po")]
+
+[node name="HotbarUI" type="CanvasGroup" parent="." unique_id=244117816]
+
+[node name="Hotbar" parent="HotbarUI" unique_id=484009725 instance=ExtResource("19_264po")]
+
+[connection signal="slot_selected" from="HotbarUI/Hotbar" to="TilePlacement" method="_on_hotbar_slot_selected"]

@@ -12,6 +12,8 @@ const MIN_ITEM_SPACING: float = 0.2
 
 # An item may leave a belt only once it has reached this position.
 const EXIT_POSITION: float = 1.0
+# A cap for item position so belts dont push item "off" if no belt can accept the item
+const MAX_STOP_POSITION: float = 0.5
 
 # Number of belt IDs the arrays are sized for.
 var capacity: int
@@ -60,15 +62,22 @@ func reset() -> void:
 
 	occupied.clear()
 
-
+func get_item_positions() -> PackedFloat32Array:
+	return item_positions
+	
+func get_item_types() -> PackedInt32Array:
+	return item_types
+	
 # Clear every field and item slot for one belt ID, including its occupied flag.
 ## Clears every variable for the given belt id
 func clear_belt(belt_id: int) -> void:
+	
 	grid_indices[belt_id] = EMPTY
 	directions[belt_id] = 0
 	speeds[belt_id] = 0
 	for slot in range(MAX_ITEMS_PER_BELT):
 		var index: int = get_item_index(belt_id, slot)
+		#11ItemRenderer.delete_item_render(item_ids[index])
 		item_types[index] = EMPTY
 		item_positions[index] = 0.0
 		item_ids[index] = EMPTY
@@ -121,7 +130,7 @@ func take_item(belt_id: int, slot: int) -> void:
 func change_item_count(belt_id: int, change: int) -> void:
 	var old_count: int = item_counts[belt_id]
 	var new_count: int = old_count + change
-	assert(new_count >= 0 and new_count <= MAX_ITEMS_PER_BELT)
+	assert(new_count >= 0 and new_count <= MAX_ITEMS_PER_BELT, "new count invalid = " + str(new_count))
 	item_counts[belt_id] = new_count
 
 	if old_count == 0 and new_count > 0:

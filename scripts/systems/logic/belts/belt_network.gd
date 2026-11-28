@@ -1,20 +1,20 @@
-## Holds the Topology of the belt graph: which belt occupies which tile, and which belt
-## each belt outputs into. It reads position and direction from BeltStore
 class_name BeltNetwork
 extends RefCounted
+# Topology of the belt graph: which belt occupies which tile, and which belt
+# each belt outputs into. It reads position and direction from BeltStore
 
 enum Direction {
-	UP,
-	RIGHT,
-	DOWN,
 	LEFT,
+	RIGHT,
+	UP,
+	DOWN,
 }
 
 const DIRECTION_OFFSETS: Array[Vector2i] = [
-	Vector2i.UP,
-	Vector2i.RIGHT,
-	Vector2i.DOWN,
 	Vector2i.LEFT,
+	Vector2i.RIGHT,
+	Vector2i.UP,
+	Vector2i.DOWN,
 ]
 
 const EMPTY: int = BeltStore.EMPTY
@@ -57,7 +57,6 @@ func unregister(belt_id: int, tile_index: int) -> void:
 	if tile_index >= 0 and tile_index < belt_at.size() and belt_at[tile_index] == belt_id:
 		belt_at[tile_index] = EMPTY
 	clear_belt(belt_id)
-
 
 # Tile index in front of [param tile_index], or EMPTY at the map border.
 func neighbor_tile(tile_index: int, direction: int) -> int:

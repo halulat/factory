@@ -58,7 +58,11 @@ func move_items(belt_id: int, delta: float) -> void:
 	var movement: float = float(_store.speeds[belt_id]) * delta
 	for slot in range(BeltStore.MAX_ITEMS_PER_BELT):
 		var index: int = _store.get_item_index(belt_id, slot)
-		if _store.item_types[index] != BeltStore.EMPTY:
+		var next_belt: int = _network.next_indices[belt_id]
+
+		if next_belt == BeltStore.EMPTY  and _store.item_positions[index] >= BeltStore.MAX_STOP_POSITION:
+			_store.item_positions[index] = BeltStore.MAX_STOP_POSITION
+		elif _store.item_types[index] != BeltStore.EMPTY and _store.item_positions[index] < BeltStore.EXIT_POSITION:
 			_store.item_positions[index] += movement
 
 

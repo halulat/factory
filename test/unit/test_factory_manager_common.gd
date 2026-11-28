@@ -126,13 +126,18 @@ const FROZEN_PUBLIC_API: Array[String] = [
 	"add_belt",
 	"add_machine",
 	"belt_item_count",
+	"flattenTileIndex",
 	"initialize_factory",
+	"is_index_in_bounds",
+	"is_pos_in_bounds",
 	"is_tile_occupied",
 	"remove_belt",
 	"remove_machine",
+	"replace_existing_belt",
 	"tick",
+	"tile_index_to_vector",
 	"try_insert_belt_item",
-	"try_take_belt_item",
+	"try_take_belt_item"
 ]
 
 
@@ -142,7 +147,7 @@ func _public_methods() -> Array[String]:
 
 	for method in script.get_script_method_list():
 		var method_name: String = method["name"]
-
+		
 		if not method_name.begins_with("_"):
 			names.append(method_name)
 

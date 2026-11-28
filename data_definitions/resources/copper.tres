@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ResourceDefinition" format=3 uid="uid://dfyyr6igh6rr0"]
+
+[ext_resource type="Texture2D" uid="uid://dhgo175feyalv" path="res://assets/resource_spritesheet.png" id="1_nsg65"]
+[ext_resource type="Script" uid="uid://chb4d6bj1ky5g" path="res://scripts/definitions/items/resource_definition.gd" id="2_fqi60"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_in5kw"]
+atlas = ExtResource("1_nsg65")
+region = Rect2(0, 0, 64, 64)
+
+[resource]
+script = ExtResource("2_fqi60")
+id = &"copper"
+display_name = "Copper"
+icon = SubResource("AtlasTexture_in5kw")

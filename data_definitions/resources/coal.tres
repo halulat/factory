@@ -1,9 +1,14 @@
 [gd_resource type="Resource" script_class="ResourceDefinition" format=3 uid="uid://b0d3mpbqs5i7o"]
 
-[ext_resource type="Script" uid="uid://bcmr2jnueip7c" path="res://scripts/definitions/items/resource_definition.gd" id="1_c078h"]
+[ext_resource type="Script" uid="uid://chb4d6bj1ky5g" path="res://scripts/definitions/items/resource_definition.gd" id="1_c078h"]
+[ext_resource type="Texture2D" uid="uid://dhgo175feyalv" path="res://assets/resource_spritesheet.png" id="1_dywi8"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_kvuet"]
+atlas = ExtResource("1_dywi8")
+region = Rect2(192, 0, 64, 64)
 
 [resource]
 script = ExtResource("1_c078h")
 id = &"coal"
 display_name = "Coal"
-metadata/_custom_type_script = "uid://bcmr2jnueip7c"
+icon = SubResource("AtlasTexture_kvuet")

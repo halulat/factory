@@ -1,0 +1,125 @@
+[gd_scene format=3 uid="uid://d3qyq8k5sdyta"]
+
+[ext_resource type="Script" uid="uid://cldhywfs3tx5a" path="res://scripts/ui/keymap_rebind.gd" id="1_rp838"]
+
+[node name="KeybindRemapUI" type="CanvasLayer" unique_id=1578841937]
+layer = 2
+
+[node name="ControlsGroup" type="Control" parent="." unique_id=1581434739 node_paths=PackedStringArray("action_rows", "description", "back_button", "reset_button")]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_rp838")
+action_rows = NodePath("ScrollContainer/ActionList")
+description = NodePath("Description")
+back_button = NodePath("BackButton")
+reset_button = NodePath("ResetButton")
+
+[node name="Label" type="Label" parent="ControlsGroup" unique_id=1439103272]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -49.0
+offset_top = 11.24
+offset_right = 49.0
+offset_bottom = 45.239998
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 24
+text = "Controls"
+
+[node name="Description" type="Label" parent="ControlsGroup" unique_id=787376048]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -33.5
+offset_top = 51.84
+offset_right = 33.5
+offset_bottom = 74.83995
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 18
+text = "Description"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ControlsGroup" unique_id=512903375]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -246.001
+offset_top = 94.015
+offset_right = 246.00037
+offset_bottom = 134.01497
+grow_horizontal = 2
+theme_override_constants/separation = 211
+
+[node name="ActionHeader" type="Label" parent="ControlsGroup/HBoxContainer" unique_id=1372377724]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Action"
+
+[node name="KeyboardHeader" type="Label" parent="ControlsGroup/HBoxContainer" unique_id=967777209]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Keyboard"
+
+[node name="ControllerHeader" type="Label" parent="ControlsGroup/HBoxContainer" unique_id=1246069113]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Controller"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ControlsGroup" unique_id=216155742]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1
+anchor_top = 0.2
+anchor_right = 0.9
+anchor_bottom = 0.832
+offset_right = -6.1035156e-05
+offset_bottom = -0.13598633
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ActionList" type="VBoxContainer" parent="ControlsGroup/ScrollContainer" unique_id=1785034873]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="BackButton" type="Button" parent="ControlsGroup" unique_id=335281498]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -40.0
+offset_right = 80.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "Back"
+
+[node name="ResetButton" type="Button" parent="ControlsGroup" unique_id=1967469044]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 90.0
+offset_top = -40.0
+offset_right = 170.0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 24
+text = "Reset"
+
+[node name="ColorRect" type="ColorRect" parent="ControlsGroup" unique_id=1257880546]
+z_index = -2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.19989306, 0.1112489, 0.16444874, 1)
